@@ -211,7 +211,7 @@
     }
 
     // Extract printable strings similar to UNIX `strings`
-    function extractStrings(u8, minLen = 4, maxStrings = 800) {
+    function extractStrings(u8, minLen = 4, maxStrings = 1000) {
         const strings = [];
         let current = "";
 

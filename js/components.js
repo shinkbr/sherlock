@@ -309,7 +309,7 @@
     const StringsSection = ({ strings, fileName, onDownloadAll }) => {
         if (!strings || !strings.length) return null;
         const [isDownloading, setIsDownloading] = React.useState(false);
-        const isTruncated = strings.length >= 800;
+        const isTruncated = strings.length >= 1000;
 
         const handleDownload = async () => {
             if (!onDownloadAll) return;

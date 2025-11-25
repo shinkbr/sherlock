@@ -8,7 +8,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 - Hashes: MD5, SHA-1, SHA-256, CRC32.
 - Entropy: value + simple risk bar.
 - Hex view: first 512 bytes.
-- Strings: printable strings (min length 4, capped at 800).
+- Strings: printable strings.
 - Imports:
   - PE: import table parsing (DLLs + functions, ordinal support).
   - ELF: DT_NEEDED shared libraries and undefined/imported symbols.
@@ -22,7 +22,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 
 | Category | File types | Information extracted in Sherlock |
 | --- | --- | --- |
-| All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 512 bytes), printable strings (up to 800) |
+| All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 512 bytes), printable strings |
 | Executables | EXE, DLL, ELF, Mach-O | Machine type, compile timestamp, sections (addresses/flags), imports/exports, symbols |
 | Documents | PDF | Version, title, author, creator, producer, subject, keywords, created/modified dates, encryption status, sampled annotation count |
 | Office | DOCX, XLSX, PPTX | Creator/last modified by, created/modified timestamps, application info, hidden sheets, comment count/authors, macro detection |
