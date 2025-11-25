@@ -39,5 +39,5 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 ## Notes & Limits
 
 - Parsing is intentionally shallow for speed and safety; very large files may be truncated (e.g., hex to 512 bytes, strings capped).  
-- All processing is client-side; ensure required CDN scripts (React, exifr, JSZip, SparkMD5, pako) load when running offline.  
+- All processing is client-side; ensure required CDN scripts (React, exifr, JSZip, pako) load when running offline.  
 - No persistence or uploads are performed.***
