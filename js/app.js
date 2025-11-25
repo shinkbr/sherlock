@@ -200,6 +200,44 @@ const App = () => {
         }
     }, [results]);
 
+    const handleDownloadHex = useCallback(async () => {
+        if (!results?.file) return;
+        try {
+            const buffer = await readFileAsArrayBuffer(results.file);
+            const u8 = new Uint8Array(buffer);
+            let output = "";
+            for (let i = 0; i < Math.ceil(u8.length / 16); i++) {
+                const offset = (i * 16).toString(16).padStart(8, '0').toUpperCase();
+                let hex = '', ascii = '';
+                for (let j = 0; j < 16; j++) {
+                    const idx = i * 16 + j;
+                    if (idx < u8.length) {
+                        const byte = u8[idx];
+                        hex += byte.toString(16).padStart(2, '0').toUpperCase() + ' ';
+                        ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+                    } else {
+                        hex += '   ';
+                        ascii += ' ';
+                    }
+                }
+                output += `${offset}  ${hex} ${ascii}\n`;
+            }
+            const safeName = (results.name || 'hexdump').replace(/[^\w.-]+/g, '_') || 'hexdump';
+            const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${safeName}_hexdump.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert("Error preparing hex download: " + err.message);
+        }
+    }, [results]);
+
     return (
         <React.Fragment>
             <Header />
@@ -220,7 +258,7 @@ const App = () => {
                             <ImportsSection imports={results.imports} />
                             <ArchiveSection files={results.archiveContents} />
                             <StringsSection strings={results.strings} fileName={results.name} onDownloadAll={handleDownloadStrings} />
-                            <HexSection data={results.hexDump} totalSize={results.rawSize} />
+                            <HexSection data={results.hexDump} totalSize={results.rawSize} onDownloadAll={handleDownloadHex} />
                         </div>
                     </div>
                 )}
