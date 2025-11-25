@@ -12,7 +12,6 @@ const {
 
 const {
     parseZipContents,
-    parseOfficeXML,
     parseTarArchive,
     parseGzip,
     parsePE,
@@ -25,7 +24,8 @@ const {
     parseELFImports,
     parseMachO,
     parseVideo,
-    parsePDF
+    parsePDF,
+    parseOfficeXML
 } = window.Parsers;
 
 const {

@@ -207,79 +207,8 @@
         }
     }
 
-    async function parseOfficeXML(file) {
-        let props = {};
-        try {
-            const zip = await window.JSZip.loadAsync(file);
-            const parser = new DOMParser();
-
-            const hasMacros = zip.file("word/vbaProject.bin") || zip.file("xl/vbaProject.bin") || zip.file("ppt/vbaProject.bin");
-            if (hasMacros) props["⚠️ MACROS DETECTED"] = "YES (vbaProject.bin found)";
-
-            const appFile = zip.file("docProps/app.xml");
-            if (appFile) {
-                const appText = await appFile.async("string");
-                const appDoc = parser.parseFromString(appText, "text/xml");
-                props["Company"] = appDoc.getElementsByTagName("Company")[0]?.textContent;
-                props["Manager"] = appDoc.getElementsByTagName("Manager")[0]?.textContent;
-                props["Application"] = appDoc.getElementsByTagName("Application")[0]?.textContent;
-                props["App Version"] = appDoc.getElementsByTagName("AppVersion")[0]?.textContent;
-            }
-
-            const coreFile = zip.file("docProps/core.xml");
-            if (coreFile) {
-                const xmlText = await coreFile.async("string");
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                props["Creator"] = xmlDoc.getElementsByTagName("dc:creator")[0]?.textContent;
-                props["Last Modified By"] = xmlDoc.getElementsByTagName("cp:lastModifiedBy")[0]?.textContent;
-                props["Created"] = xmlDoc.getElementsByTagName("dcterms:created")[0]?.textContent;
-                props["Modified"] = xmlDoc.getElementsByTagName("dcterms:modified")[0]?.textContent;
-                props["Subject"] = xmlDoc.getElementsByTagName("dc:subject")[0]?.textContent;
-                props["Title"] = xmlDoc.getElementsByTagName("dc:title")[0]?.textContent;
-                props["Keywords"] = xmlDoc.getElementsByTagName("cp:keywords")[0]?.textContent;
-            }
-
-            const workbook = zip.file("xl/workbook.xml");
-            if (workbook) {
-                const xmlText = await workbook.async("string");
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const sheets = xmlDoc.getElementsByTagName("sheet");
-                let hiddenSheets = [];
-                for (let i = 0; i < sheets.length; i++) {
-                    const state = sheets[i].getAttribute("state");
-                    if (state === "hidden" || state === "veryHidden") {
-                        hiddenSheets.push(`${sheets[i].getAttribute("name")} (${state})`);
-                    }
-                }
-                if (hiddenSheets.length > 0) props["⚠️ Hidden Sheets"] = hiddenSheets.join(", ");
-            }
-
-            let commentFiles = Object.keys(zip.files).filter(path => path.includes("comments") && path.endsWith(".xml"));
-            if (commentFiles.length > 0) {
-                let totalComments = 0;
-                let authors = new Set();
-                for (const path of commentFiles) {
-                    const xmlText = await zip.file(path).async("string");
-                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                    const comments = xmlDoc.getElementsByTagName("w:comment").length || xmlDoc.getElementsByTagName("comment").length;
-                    totalComments += comments;
-
-                    const authorTags = xmlDoc.getElementsByTagName("w:author");
-                    for (let i = 0; i < authorTags.length; i++) authors.add(authorTags[i].textContent);
-                }
-                if (totalComments > 0) {
-                    props["Comments Count"] = totalComments;
-                    if (authors.size > 0) props["Comment Authors"] = Array.from(authors).join(", ");
-                }
-            }
-
-        } catch (e) { console.error("Office Parse Error", e); }
-        return props;
-    }
-
     window.Parsers = Object.assign(window.Parsers || {}, {
         parseZipContents,
-        parseOfficeXML,
         parseTarArchive,
         parseGzip
     });
