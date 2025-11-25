@@ -7,7 +7,8 @@ const {
     calculateEntropy,
     identifyFileType,
     formatBytes,
-    extractStrings
+    extractStrings,
+    isLikelyText
 } = window.Helpers;
 
 const {
@@ -42,6 +43,37 @@ const {
     MapViewer
 } = window.Components;
 
+const TEXT_EXT_LABELS = {
+    txt: "Plain Text",
+    md: "Markdown",
+    markdown: "Markdown",
+    json: "JSON",
+    yaml: "YAML",
+    yml: "YAML",
+    xml: "XML",
+    html: "HTML",
+    htm: "HTML",
+    css: "CSS",
+    js: "JavaScript",
+    ts: "TypeScript",
+    c: "C Source",
+    h: "C Header",
+    cpp: "C++ Source",
+    hpp: "C++ Header",
+    go: "Go Source",
+    rs: "Rust Source",
+    py: "Python Source",
+    sh: "Shell Script",
+    bash: "Shell Script",
+    bat: "Batch Script",
+    ini: "INI Config",
+    cfg: "Config",
+    conf: "Config",
+    log: "Log File",
+    csv: "CSV",
+    tsv: "TSV"
+};
+
 const App = () => {
     const [results, setResults] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -61,7 +93,7 @@ const App = () => {
             const magicHex = getMagicBytes(view, 16);
             let detectedFormat = identifyFileType(view, magicHex) || "Unknown Binary";
             const hexDump = uint8Array.slice(0, 4096);
-            const ext = selectedFile.name.split('.').pop().toLowerCase();
+            const ext = (selectedFile.name.split('.').pop() || '').toLowerCase();
             const strings = extractStrings(uint8Array);
 
             let metadata = {};
@@ -149,6 +181,10 @@ const App = () => {
                 } else if (magicHex.startsWith("25504446")) {
                     metadata = await parsePDF(arrayBuffer);
                 }
+            }
+
+            if ((!detectedFormat || detectedFormat === "Unknown Binary") && isLikelyText(uint8Array)) {
+                detectedFormat = TEXT_EXT_LABELS[ext] || (ext ? `${ext.toUpperCase()} Text` : "Plain Text");
             }
 
             setResults({

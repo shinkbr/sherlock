@@ -179,6 +179,23 @@
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     }
 
+    // Heuristic to decide if a buffer is mostly text (UTF-8-ish)
+    function isLikelyText(u8) {
+        if (!u8 || !u8.length) return false;
+        const sample = u8.subarray(0, Math.min(u8.length, 8192));
+        let printable = 0;
+        let controlish = 0;
+        for (let i = 0; i < sample.length; i++) {
+            const b = sample[i];
+            if (b === 0) { controlish++; continue; }
+            if ((b >= 7 && b <= 13) || (b >= 32 && b <= 126)) { printable++; continue; }
+            if (b >= 0xC2 && b <= 0xF4) { printable++; continue; } // likely UTF-8 multi-byte lead
+            controlish++;
+        }
+        const ratio = printable / sample.length;
+        return ratio > 0.85 && controlish / sample.length < 0.2;
+    }
+
     function identifyFileType(view, hex) {
         const signatures = window.FILE_SIGNATURES || [];
         for (const sig of signatures) {
@@ -229,6 +246,7 @@
         bufferToHex,
         formatBytes,
         identifyFileType,
+        isLikelyText,
         extractStrings
     };
 })();
