@@ -176,8 +176,9 @@ const App = () => {
                     archiveContents = parseTarArchive(arrayBuffer).files;
                     detectedFormat = "TAR Archive";
                 } else if (detectedFormat.includes("ISO") || ['mp4', 'mkv', 'avi', 'mov'].includes(ext) || magicHex.startsWith("1A45")) {
-                    const videoMeta = await parseVideo(selectedFile, view, magicHex, detectedFormat);
-                    metadata = videoMeta;
+                    const videoMeta = await parseVideo(selectedFile, arrayBuffer, magicHex, detectedFormat);
+                    metadata = videoMeta.metadata || {};
+                    if (videoMeta.gps) gps = videoMeta.gps;
                 } else if (magicHex.startsWith("25504446")) {
                     metadata = await parsePDF(arrayBuffer);
                 }
