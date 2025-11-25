@@ -149,7 +149,7 @@
         const sha256Buffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
         const sha256 = bufferToHex(sha256Buffer);
 
-        const crc = crc32(arrayBuffer).toString(16).toUpperCase().padStart(8, '0');
+        const crc = crc32(arrayBuffer).toString(16).padStart(8, '0');
 
         return { md5, sha1, sha256, crc32: crc };
     }
