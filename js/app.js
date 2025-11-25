@@ -153,6 +153,7 @@ const App = () => {
 
             setResults({
                 name: selectedFile.name,
+                file: selectedFile,
                 size: formatBytes(selectedFile.size),
                 rawSize: selectedFile.size,
                 type: selectedFile.type,
@@ -178,6 +179,27 @@ const App = () => {
         }
     }, []);
 
+    const handleDownloadStrings = useCallback(async () => {
+        if (!results?.file) return;
+        try {
+            const buffer = await readFileAsArrayBuffer(results.file);
+            const allStrings = extractStrings(new Uint8Array(buffer), 4, Infinity);
+            const safeName = (results.name || 'strings').replace(/[^\w.-]+/g, '_') || 'strings';
+            const blob = new Blob([allStrings.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${safeName}_strings.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert("Error preparing strings download: " + err.message);
+        }
+    }, [results]);
+
     return (
         <React.Fragment>
             <Header />
@@ -197,7 +219,7 @@ const App = () => {
                             <SymbolsSection symbols={results.symbols} />
                             <ImportsSection imports={results.imports} />
                             <ArchiveSection files={results.archiveContents} />
-                            <StringsSection strings={results.strings} />
+                            <StringsSection strings={results.strings} fileName={results.name} onDownloadAll={handleDownloadStrings} />
                             <HexSection data={results.hexDump} totalSize={results.rawSize} />
                         </div>
                     </div>
