@@ -274,6 +274,11 @@ const App = () => {
         }
     }, [results]);
 
+    const hasMetadata = results && (
+        (results.metadata && Object.keys(results.metadata).length > 0) ||
+        !!results.gps
+    );
+
     return (
         <React.Fragment>
             <Header />
@@ -285,9 +290,11 @@ const App = () => {
                         <InfoCard data={results} />
 
                         <div className="space-y-6">
-                            <MetadataSection title="Extracted Metadata" data={results.metadata} icon="FileText">
-                                <MapViewer gps={results.gps} />
-                            </MetadataSection>
+                            {hasMetadata && (
+                                <MetadataSection title="Extracted Metadata" data={results.metadata} icon="FileText">
+                                    <MapViewer gps={results.gps} />
+                                </MetadataSection>
+                            )}
 
                             <SectionsSection sections={results.sections} />
                             <SymbolsSection symbols={results.symbols} />
