@@ -20,7 +20,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 
 ## Supported File Types
 
-| File category | File extensions | Information extracted in Sherlock |
+| Category | File types | Information extracted in Sherlock |
 | --- | --- | --- |
 | All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 512 bytes), printable strings (up to 800) |
 | Executables | EXE, DLL, ELF, Mach-O | Machine type, compile timestamp, sections (addresses/flags), imports/exports, symbols |
