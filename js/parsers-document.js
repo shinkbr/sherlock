@@ -33,11 +33,6 @@
         // Prefer pdf.js for structured metadata + annotation counts.
         if (window.pdfjsLib) {
             try {
-                if (!window.__sherlockPdfWorkerConfigured) {
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
-                    window.__sherlockPdfWorkerConfigured = true;
-                }
-
                 let passwordReason = null;
                 const loadingTask = window.pdfjsLib.getDocument({
                     data: arrayBuffer,
