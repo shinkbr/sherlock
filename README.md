@@ -7,7 +7,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 - File detection: magic bytes + signature table to label common formats (PE/ELF, images, PDFs, ZIP/Office, video containers, gzip/rar/7z, etc.).
 - Hashes: MD5, SHA-1, SHA-256, CRC32.
 - Entropy: value + simple risk bar.
-- Hex view: first 512 bytes.
+- Hex dump: first 512 bytes.
 - Strings: printable strings.
 - Imports:
   - PE: import table parsing (DLLs + functions, ordinal support).

@@ -264,7 +264,7 @@ const HexSection = ({ data, totalSize, onDownloadAll }) => {
             <div className="bg-slate-900/50 px-6 py-3 border-b border-slate-700 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <div className="text-cyan-400"><Icons.Binary /></div>
-                    <h3 className="font-semibold text-slate-200">Hex View</h3>
+                    <h3 className="font-semibold text-slate-200">Hex Dump</h3>
                 </div>
                 <button
                     className="text-xs px-3 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
