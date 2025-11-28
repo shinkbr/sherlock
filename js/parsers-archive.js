@@ -1,6 +1,6 @@
-(() => {
-    const { formatBytes } = window.Helpers;
-    const decoder = new TextDecoder("utf-8");
+import { formatBytes } from './helpers.js';
+
+const decoder = new TextDecoder("utf-8");
 
     function parseTarArchive(bufferLike) {
         const u8 = bufferLike instanceof Uint8Array ? bufferLike : new Uint8Array(bufferLike);
@@ -207,9 +207,8 @@
         }
     }
 
-    window.Parsers = Object.assign(window.Parsers || {}, {
-        parseZipContents,
-        parseTarArchive,
-        parseGzip
-    });
-})();
+export {
+    parseZipContents,
+    parseTarArchive,
+    parseGzip
+};

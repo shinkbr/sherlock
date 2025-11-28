@@ -1,5 +1,4 @@
-(() => {
-    const { Icons } = window;
+const { Icons } = window;
 
     const Header = () => (
         <nav className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md z-50">
@@ -364,18 +363,35 @@
         );
     };
 
-    window.Components = {
-        Header,
-        DropZone,
-        InfoCard,
-        HashBox,
-        MetadataSection,
-        SectionsSection,
-        SymbolsSection,
-        ArchiveSection,
-        ImportsSection,
-        HexSection,
-        StringsSection,
-        MapViewer
-    };
-})();
+const Components = {
+    Header,
+    DropZone,
+    InfoCard,
+    HashBox,
+    MetadataSection,
+    SectionsSection,
+    SymbolsSection,
+    ArchiveSection,
+    ImportsSection,
+    HexSection,
+    StringsSection,
+    MapViewer
+};
+
+window.Components = Components;
+
+export {
+    Header,
+    DropZone,
+    InfoCard,
+    HashBox,
+    MetadataSection,
+    SectionsSection,
+    SymbolsSection,
+    ArchiveSection,
+    ImportsSection,
+    HexSection,
+    StringsSection,
+    MapViewer,
+    Components
+};

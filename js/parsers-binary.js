@@ -1,5 +1,4 @@
-(() => {
-    const { formatBytes } = window.Helpers;
+import { formatBytes } from './helpers.js';
 
     function parsePE(view) {
         try {
@@ -1059,15 +1058,14 @@
         return parseSingleMachO(0, isLittle, magic);
     }
 
-    window.Parsers = Object.assign(window.Parsers || {}, {
-        parsePE,
-        parsePESections,
-        parsePESymbols,
-        parsePEImports,
-        parseELF,
-        parseELFSections,
-        parseELFSymbols,
-        parseELFImports,
-        parseMachO
-    });
-})();
+export {
+    parsePE,
+    parsePESections,
+    parsePESymbols,
+    parsePEImports,
+    parseELF,
+    parseELFSections,
+    parseELFSymbols,
+    parseELFImports,
+    parseMachO
+};

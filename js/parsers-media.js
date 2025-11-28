@@ -1,5 +1,4 @@
-(() => {
-    const SECONDS_BETWEEN_1904_AND_1970 = 2082844800; // QuickTime epoch difference
+const SECONDS_BETWEEN_1904_AND_1970 = 2082844800; // QuickTime epoch difference
 
     function readString(view, offset, length) {
         return Array.from({ length }, (_, i) => String.fromCharCode(view.getUint8(offset + i))).join('');
@@ -311,7 +310,4 @@
         return { metadata: meta, gps };
     }
 
-    window.Parsers = Object.assign(window.Parsers || {}, {
-        parseVideo
-    });
-})();
+export { parseVideo };

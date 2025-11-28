@@ -1,5 +1,4 @@
-(() => {
-    function formatPDFDate(raw) {
+function formatPDFDate(raw) {
         if (!raw) return null;
         try {
             const match = raw.match(/^D:(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?([Z+-])?(\d{2})?'?(\d{2})'?/);
@@ -192,8 +191,7 @@
         return props;
     }
 
-    window.Parsers = Object.assign(window.Parsers || {}, {
-        parsePDF,
-        parseOfficeXML
-    });
-})();
+export {
+    parsePDF,
+    parseOfficeXML
+};

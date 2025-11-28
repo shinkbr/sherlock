@@ -1,4 +1,4 @@
-window.FILE_SIGNATURES = [
+export const FILE_SIGNATURES = [
     { sig: "4D5A", type: "Windows Executable (PE)" },
     { sig: "7F454C46", type: "ELF Binary" },
     { sig: "25504446", type: "PDF Document" },
@@ -23,3 +23,5 @@ window.FILE_SIGNATURES = [
     { sig: "D0CF11E0", type: "Microsoft Office (Legacy)" },
     { sig: "2321", type: "Script (Shebang)" }
 ];
+
+window.FILE_SIGNATURES = FILE_SIGNATURES;
