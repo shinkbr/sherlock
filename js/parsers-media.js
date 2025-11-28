@@ -299,7 +299,7 @@ async function parseVideo(file, buffer, magicHex) {
 
     // Ensure we have a label for resolution if we parsed it in video tracks
     if (!meta["Resolution"] && meta["Video Tracks"]) {
-        const firstRes = meta["Video Tracks"].split("\n").map(r => r.match(/(\\d+x\\d+)/)).find(Boolean);
+        const firstRes = meta["Video Tracks"].split("\n").map(r => r.match(/(\d+x\d+)/)).find(Boolean);
         if (firstRes && firstRes[1]) meta["Resolution"] = firstRes[1];
     }
 
