@@ -7,7 +7,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 - File detection: magic bytes + signature table to label common formats (PE/ELF, images, PDFs, ZIP/Office, video containers, gzip/rar/7z, etc.).
 - Hashes: MD5, SHA-1, SHA-256, CRC32.
 - Entropy: value + simple risk bar.
-- Hex dump: first 512 bytes.
+- Hex dump: first 4 KB.
 - Strings: printable strings.
 - Imports:
   - PE: import table parsing (DLLs + functions, ordinal support).
@@ -22,7 +22,7 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 
 | Category | File types | Information extracted in Sherlock |
 | --- | --- | --- |
-| All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 512 bytes), printable strings |
+| All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 4 KB), printable strings |
 | Executables | EXE, DLL, ELF, Mach-O | Machine type, compile timestamp, sections (addresses/flags), imports/exports, symbols |
 | Documents | PDF | Version, title, author, creator, producer, subject, keywords, created/modified dates, encryption status, sampled annotation count |
 | Office | DOCX, XLSX, PPTX | Creator/last modified by, created/modified timestamps, application info, hidden sheets, comment count/authors, macro detection |
@@ -38,6 +38,6 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 
 ## Notes & Limits
 
-- Parsing is intentionally shallow for speed and safety; very large files may be truncated (e.g., hex to 512 bytes, strings capped).  
+- Parsing is intentionally shallow for speed and safety; very large files may be truncated (e.g., hex to 4 KB, strings capped).  
 - All processing is client-side; ensure required CDN scripts (React, exifr, JSZip, pako) load when running offline.  
 - No persistence or uploads are performed.***

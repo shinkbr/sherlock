@@ -904,9 +904,9 @@ function parseMachO(view) {
             if (isSeg32 || isSeg64) {
                 const segName = readString(lcOffset + 8, 16);
                 const vmaddr = isSeg64 ? rd64(lcOffset + 24) : rd32(lcOffset + 24);
-                const vmsize = isSeg64 ? rd64(lcOffset + 32) : rd32(lcOffset + 32);
-                const fileoff = isSeg64 ? rd64(lcOffset + 40) : rd32(lcOffset + 32 + 8);
-                const filesize = isSeg64 ? rd64(lcOffset + 48) : rd32(lcOffset + 40);
+                const vmsize = isSeg64 ? rd64(lcOffset + 32) : rd32(lcOffset + 28);
+                const fileoff = isSeg64 ? rd64(lcOffset + 40) : rd32(lcOffset + 32);
+                const filesize = isSeg64 ? rd64(lcOffset + 48) : rd32(lcOffset + 36);
                 const initprot = rd32(lcOffset + (isSeg64 ? 60 : 44));
                 const nsects = rd32(lcOffset + (isSeg64 ? 64 : 48));
 
