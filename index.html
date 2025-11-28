@@ -9,23 +9,20 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com/3.4.13"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' },
-                        cyan: { 400: '#22d3ee', 500: '#06b6d4' }
-                    }
-                }
-            }
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.17" crossorigin integrity="sha384-LkHktCFpS+fBoOMK5nyyLPSepq0+mMDcyFbRwtjdRhniESKQr2zHISLMBizGu6zt"></script>
+    <style type="text/tailwindcss">
+        @import "tailwindcss";
+
+        @theme inline {
+            --font-sans: "Inter", sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+            --color-slate-850: #1e293b;
+            --color-slate-900: #0f172a;
+            --color-slate-950: #020617;
+            --color-cyan-400: #22d3ee;
+            --color-cyan-500: #06b6d4;
         }
-    </script>
+    </style>
 
     <!-- React & ReactDOM (production) -->
     <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z"></script>
