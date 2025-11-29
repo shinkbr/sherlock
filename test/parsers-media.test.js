@@ -108,8 +108,8 @@ describe('parsers-media parseVideo', () => {
             set onloadedmetadata(fn) { this._onload = fn; fn(); },
             set onerror(fn) { this._onerror = fn; },
             get duration() { return 7; },
-            get videoWidth() { return 1280; },
-            get videoHeight() { return 720; }
+            get videoWidth() { return 1920; },
+            get videoHeight() { return 1080; }
         };
         vi.spyOn(document, 'createElement').mockReturnValue(videoStub);
 
