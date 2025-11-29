@@ -17,6 +17,7 @@ function formatPDFDate(raw) {
 async function parsePDF(arrayBuffer) {
     const metadata = {};
     let textCache = null;
+    let passwordReason = null;
 
     const ensureText = () => {
         if (textCache) return textCache;
@@ -29,16 +30,20 @@ async function parsePDF(arrayBuffer) {
         if (!metadata[label]) metadata[label] = value;
     };
 
+    // Always try to grab version from the header bytes, even if parsing fails later.
+    const headerBytes = new Uint8Array(arrayBuffer, 0, Math.min(arrayBuffer.byteLength, 32));
+    const headerText = new TextDecoder("ascii").decode(headerBytes);
+    setIfValue("PDF Version", headerText.match(/%PDF-([0-9.]+)/)?.[1]);
+
     // Prefer pdf.js for structured metadata + annotation counts.
     if (window.pdfjsLib) {
         try {
-            let passwordReason = null;
             const loadingTask = window.pdfjsLib.getDocument({
                 data: arrayBuffer,
                 disableFontFace: true,
                 onPassword: (callback, reason) => {
                     passwordReason = reason;
-                    callback(null);
+                    callback("");
                 }
             });
 
@@ -58,9 +63,7 @@ async function parsePDF(arrayBuffer) {
             setIfValue("Modified", formatPDFDate(info.ModDate));
 
             if (passwordReason !== null) {
-                const resp = window.pdfjsLib.PasswordResponses;
-                if (passwordReason === resp?.NEED_PASSWORD) metadata["Encryption"] = "Password required";
-                else if (passwordReason === resp?.INCORRECT_PASSWORD) metadata["Encryption"] = "Encrypted (incorrect password)";
+                metadata["Encryption"] = "Encrypted";
             } else if (typeof doc.isEncrypted === "boolean") {
                 metadata["Encryption"] = doc.isEncrypted ? "Encrypted" : "Not encrypted";
             }
@@ -83,7 +86,10 @@ async function parsePDF(arrayBuffer) {
 
             doc.cleanup();
         } catch (e) {
-            setIfValue("PDF Parse Note", e.message);
+            const reason = passwordReason ?? e?.code ?? null;
+            if (!metadata["Encryption"] && reason !== null) {
+                metadata["Encryption"] = "Encrypted";
+            }
         }
     }
 
@@ -111,7 +117,7 @@ async function parsePDF(arrayBuffer) {
     setIfValue("Modified", formatPDFDate(modDate?.[1]));
 
     if (!metadata["Encryption"]) {
-        metadata["Encryption"] = text.includes("/Encrypt") ? "Encrypted (Encrypt dictionary present)" : "Not detected";
+        metadata["Encryption"] = text.includes("/Encrypt") ? "Encrypted" : "Not encrypted";
     }
 
     if (!metadata["Comments/Annotations"] && /\/Annots\s*\[/.test(text)) {
