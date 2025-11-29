@@ -203,7 +203,7 @@ function identifyFileType(view, hex) {
         if (hex.startsWith(sig.sig)) return sig.type;
     }
     try {
-        if (hex.length >= 24) {
+        if (hex.length >= 16) {
             const ftyp = String.fromCharCode(view.getUint8(4), view.getUint8(5), view.getUint8(6), view.getUint8(7));
             if (ftyp === 'ftyp') return `ISO Media / MP4`;
         }

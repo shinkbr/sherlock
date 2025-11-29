@@ -188,11 +188,12 @@ function buildMachOView() {
     view.setUint32(symtabOffset + 20, 16, false); // strsize
 
     // symbol table
-    view.setUint32(0x200, 1, false); // strx
+    view.setUint32(0x200, 1, false); // strx after leading null
     view.setUint8(0x204, 0x0E | 0x01); // type SECT + EXT
     view.setBigUint64(0x208, 0x1000n, false); // value
 
-    setString(view, 0x220, '_main');
+    // String table starts with a null byte; place "_main" at offset 1.
+    setString(view, 0x221, '_main');
 
     return view;
 }

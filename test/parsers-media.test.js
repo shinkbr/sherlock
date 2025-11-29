@@ -41,8 +41,9 @@ function makeTkhdBox(width, height) {
     const payload = new Uint8Array(104);
     const view = new DataView(payload.buffer);
     view.setUint8(0, 0);
-    view.setUint32(76, width * 65536, false);
-    view.setUint32(80, height * 65536, false);
+    // Offsets are relative to full box start, so subtract header (8 bytes) when writing payload.
+    view.setUint32(68, width * 65536, false);
+    view.setUint32(72, height * 65536, false);
     return makeBox('tkhd', payload);
 }
 

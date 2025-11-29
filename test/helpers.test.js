@@ -60,7 +60,7 @@ describe('helpers', () => {
         const view = new DataView(buf);
         view.setUint32(4, 0x66747970);
         expect(identifyFileType(view, '4D5A')).toBe('Windows Executable (PE)');
-        expect(identifyFileType(view, '0000002066747970')).toBe('ISO Media / MP4');
+        expect(identifyFileType(view, '000000206674797000000000')).toBe('ISO Media / MP4');
     });
 
     it('detects likely text buffers', () => {

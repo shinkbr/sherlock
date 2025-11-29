@@ -198,6 +198,7 @@ async function parseOfficeXML(file) {
 }
 
 export {
+    formatPDFDate,
     parsePDF,
     parseOfficeXML
 };
