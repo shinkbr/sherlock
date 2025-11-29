@@ -227,7 +227,7 @@ describe('parsers-binary', () => {
 
         const imports = parseELFImports(view);
         expect(imports['Shared Libraries (DT_NEEDED)']).toContain('libc.so.6');
-        expect(imports['Imported Functions (Undefined Symbols)']).toContain('puts');
+        expect(imports['Imported Functions (Undefined Symbols)'] || []).toContain('puts');
     });
 
     it('parses Mach-O metadata, sections, and symbols', () => {
