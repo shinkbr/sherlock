@@ -67,10 +67,10 @@ async function parsePDF(arrayBuffer) {
             metadata["Encryption"] = doc.isEncrypted ? "Encrypted" : "Not encrypted";
         }
 
-        // Scan a few pages for annotations/comments to keep costs bounded.
+        // Scan all pages for annotations/comments (stop early if it gets too large).
         try {
             let annotationCount = 0;
-            const pagesToScan = Math.min(doc.numPages || 0, 5);
+            const pagesToScan = doc.numPages || 0;
             for (let i = 1; i <= pagesToScan; i++) {
                 const page = await doc.getPage(i);
                 const annots = await page.getAnnotations({ intent: "display" });
