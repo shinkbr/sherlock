@@ -36,64 +36,63 @@ async function parsePDF(arrayBuffer) {
     setIfValue("PDF Version", headerText.match(/%PDF-([0-9.]+)/)?.[1]);
 
     // Prefer pdf.js for structured metadata + annotation counts.
-    if (window.pdfjsLib) {
+    try {
+        const loadingTask = window.pdfjsLib.getDocument({
+            data: arrayBuffer,
+            disableFontFace: true,
+            onPassword: (callback, reason) => {
+                passwordReason = reason;
+                callback("");
+            }
+        });
+
+        const doc = await loadingTask.promise;
+        const meta = await doc.getMetadata().catch(() => null);
+        const info = meta?.info || doc?.pdfInfo || doc?._pdfInfo || {};
+
+        setIfValue("PDF Version", info.PDFFormatVersion || info.version);
+        setIfValue("Title", info.Title);
+        setIfValue("Author", info.Author);
+        setIfValue("Creator", info.Creator);
+        setIfValue("Producer / Software", info.Producer);
+        setIfValue("Subject", info.Subject);
+        const keywords = Array.isArray(info.Keywords) ? info.Keywords.join(", ") : info.Keywords;
+        setIfValue("Keywords", keywords);
+        setIfValue("Created", formatPDFDate(info.CreationDate));
+        setIfValue("Modified", formatPDFDate(info.ModDate));
+
+        if (passwordReason !== null) {
+            metadata["Encryption"] = "Encrypted";
+        } else if (typeof doc.isEncrypted === "boolean") {
+            metadata["Encryption"] = doc.isEncrypted ? "Encrypted" : "Not encrypted";
+        }
+
+        // Scan a few pages for annotations/comments to keep costs bounded.
         try {
-            const loadingTask = window.pdfjsLib.getDocument({
-                data: arrayBuffer,
-                disableFontFace: true,
-                onPassword: (callback, reason) => {
-                    passwordReason = reason;
-                    callback("");
-                }
-            });
-
-            const doc = await loadingTask.promise;
-            const meta = await doc.getMetadata().catch(() => null);
-            const info = meta?.info || doc?.pdfInfo || doc?._pdfInfo || {};
-
-            setIfValue("PDF Version", info.PDFFormatVersion || info.version);
-            setIfValue("Title", info.Title);
-            setIfValue("Author", info.Author);
-            setIfValue("Creator", info.Creator);
-            setIfValue("Producer / Software", info.Producer);
-            setIfValue("Subject", info.Subject);
-            const keywords = Array.isArray(info.Keywords) ? info.Keywords.join(", ") : info.Keywords;
-            setIfValue("Keywords", keywords);
-            setIfValue("Created", formatPDFDate(info.CreationDate));
-            setIfValue("Modified", formatPDFDate(info.ModDate));
-
-            if (passwordReason !== null) {
-                metadata["Encryption"] = "Encrypted";
-            } else if (typeof doc.isEncrypted === "boolean") {
-                metadata["Encryption"] = doc.isEncrypted ? "Encrypted" : "Not encrypted";
+            let annotationCount = 0;
+            const pagesToScan = Math.min(doc.numPages || 0, 5);
+            for (let i = 1; i <= pagesToScan; i++) {
+                const page = await doc.getPage(i);
+                const annots = await page.getAnnotations({ intent: "display" });
+                annotationCount += (annots || []).length;
+                if (annotationCount > 100) break;
             }
-
-            // Scan a few pages for annotations/comments to keep costs bounded.
-            try {
-                let annotationCount = 0;
-                const pagesToScan = Math.min(doc.numPages || 0, 5);
-                for (let i = 1; i <= pagesToScan; i++) {
-                    const page = await doc.getPage(i);
-                    const annots = await page.getAnnotations({ intent: "display" });
-                    annotationCount += (annots || []).length;
-                    if (annotationCount > 100) break;
-                }
-                if (annotationCount > 0) {
-                    const scope = pagesToScan === doc.numPages ? `all ${doc.numPages} pages` : `first ${pagesToScan} pages`;
-                    metadata["Comments/Annotations"] = `${annotationCount} found (${scope})`;
-                }
-            } catch (e) { }
-
-            doc.cleanup();
-        } catch (e) {
-            const reason = passwordReason ?? e?.code ?? null;
-            if (!metadata["Encryption"] && reason !== null) {
-                metadata["Encryption"] = "Encrypted";
+            if (annotationCount > 0) {
+                const scope = pagesToScan === doc.numPages ? `all ${doc.numPages} pages` : `first ${pagesToScan} pages`;
+                metadata["Comments/Annotations"] = `${annotationCount} found (${scope})`;
             }
+        } catch (e) { }
+
+        doc.cleanup();
+    } catch (e) {
+        if (e instanceof ReferenceError) throw e;
+        const reason = passwordReason ?? e?.code ?? null;
+        if (!metadata["Encryption"] && reason !== null) {
+            metadata["Encryption"] = "Encrypted";
         }
     }
 
-    // Fallback lightweight parsing when pdf.js isn't available or missed fields.
+    // Fallback lightweight parsing to fill any gaps.
     const text = ensureText();
     if (!metadata["PDF Version"]) {
         const v = text.match(/%PDF-([0-9.]+)/)?.[1];

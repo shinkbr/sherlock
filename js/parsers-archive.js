@@ -105,16 +105,15 @@ function parseGzip(file, arrayBuffer, ext = "") {
     };
 
     const shouldInspectTar = looksLikeTar();
-    if (window.pako && shouldInspectTar) {
+    if (shouldInspectTar) {
         try {
             const decompressed = window.pako.ungzip(u8);
             files = parseTarArchive(decompressed).files;
         } catch (e) {
+            if (e instanceof ReferenceError) throw e;
             console.error("GZIP decompress error", e);
             metadata["GZIP Warning"] = "Failed to decompress payload";
         }
-    } else if (!window.pako && shouldInspectTar) {
-        metadata["GZIP Warning"] = "pako missing; cannot inspect tar payload";
     }
 
     return { metadata, files };

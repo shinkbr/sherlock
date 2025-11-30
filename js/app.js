@@ -122,18 +122,14 @@ const App = () => {
                 sections = mach.sections;
                 symbols = mach.symbols || [];
             } else if (magicHex.startsWith('FFD8') || magicHex.startsWith('89504E47') || ['jpg', 'jpeg', 'png', 'heic', 'tiff'].includes(ext)) {
-                try {
-                    if (window.exifr) {
-                        const ex = await window.exifr.parse(arrayBuffer, { tiff: true, xmp: true, icc: true, gps: true });
-                        if (ex) {
-                            for (const [k, v] of Object.entries(ex)) {
-                                if (v instanceof Uint8Array || (typeof v === 'object' && !(v instanceof Date))) continue;
-                                metadata[k] = v instanceof Date ? v.toLocaleString() : v;
-                            }
-                            if (ex.latitude && ex.longitude) gps = { lat: ex.latitude, lon: ex.longitude };
-                        }
+                const ex = await window.exifr.parse(arrayBuffer, { tiff: true, xmp: true, icc: true, gps: true });
+                if (ex) {
+                    for (const [k, v] of Object.entries(ex)) {
+                        if (v instanceof Uint8Array || (typeof v === 'object' && !(v instanceof Date))) continue;
+                        metadata[k] = v instanceof Date ? v.toLocaleString() : v;
                     }
-                } catch (e) { console.log("EXIF Warning", e); }
+                    if (ex.latitude && ex.longitude) gps = { lat: ex.latitude, lon: ex.longitude };
+                }
             } else if (magicHex.startsWith("504B0304")) {
                 const zipInfo = await parseZipContents(selectedFile);
                 archiveContents = zipInfo.files || [];
