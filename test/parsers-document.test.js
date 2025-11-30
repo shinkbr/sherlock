@@ -26,7 +26,7 @@ describe('parsers-document', () => {
         expect(metadata.Author).toBe('Unit Tester');
         expect(metadata['Producer / Software']).toBe('Producer');
         expect(metadata.Encryption).toBe('Encrypted');
-        expect(metadata['Comments/Annotations']).toBeDefined();
+        expect(metadata['Comments/Annotations']).toBeUndefined();
     });
 
     it('parses Office OpenXML properties from a zip', async () => {
