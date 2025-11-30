@@ -67,19 +67,79 @@ async function parsePDF(arrayBuffer) {
             metadata["Encryption"] = doc.isEncrypted ? "Encrypted" : "Not encrypted";
         }
 
-        // Scan all pages for annotations/comments (stop early if it gets too large).
+        // Scan all pages for annotations/comments (ignore ones without text).
         try {
             let annotationCount = 0;
             const pagesToScan = doc.numPages || 0;
+            let pagesScanned = 0;
+            const commentSnippets = [];
+            const extractText = (val) => {
+                if (val === undefined || val === null) return "";
+                if (typeof val === "string") return val;
+                if (Array.isArray(val)) {
+                    return val.map(extractText).filter(Boolean).join(" ");
+                }
+                if (typeof val === "object") {
+                    if (typeof val.str === "string") return val.str;
+                    if (Array.isArray(val.items)) {
+                        return val.items.map(it => extractText(it?.str ?? it)).filter(Boolean).join(" ");
+                    }
+                    if (typeof val.value === "string") return val.value;
+                }
+                return typeof val.toString === "function" ? val.toString() : "";
+            };
             for (let i = 1; i <= pagesToScan; i++) {
                 const page = await doc.getPage(i);
                 const annots = await page.getAnnotations({ intent: "display" });
-                annotationCount += (annots || []).length;
-                if (annotationCount > 100) break;
+                const contents = (annots || []).flatMap(a => {
+                    const candidates = [
+                        a?.contents,
+                        a?.content,
+                        a?.contentsObj,
+                        a?.richText,
+                        a?.title,
+                        a?.subject,
+                        a?.text,
+                        a?.altText,
+                        a?.caption,
+                        a?.popup?.contents,
+                        a?.popup?.richText,
+                        a?.irtContents,
+                        a?.reviewState?.state,
+                        a?.reviewState?.stateModel,
+                        a?.data?.contents,
+                        a?.data?.content,
+                        a?.data?.contentsObj,
+                        a?.data?.richText,
+                        a?.data?.title,
+                        a?.data?.subject
+                    ];
+                    const seen = new Set();
+                    const extracted = candidates
+                        .map(extractText)
+                        .map(t => t.trim())
+                        .filter(Boolean)
+                        .filter(t => {
+                            if (seen.has(t)) return false;
+                            seen.add(t);
+                            return true;
+                        });
+                    return extracted;
+                });
+                const hasText = contents.length > 0;
+                if (hasText) annotationCount++;
+                for (const text of contents) {
+                    const snippet = text.length > 300 ? `${text.slice(0, 300)}…` : text;
+                    commentSnippets.push(`p${i}: ${snippet}`);
+                }
+                pagesScanned++;
             }
             if (annotationCount > 0) {
-                const scope = pagesToScan === doc.numPages ? `all ${doc.numPages} pages` : `first ${pagesToScan} pages`;
+                const scope = pagesScanned === pagesToScan ? `all ${pagesToScan} pages` : `first ${pagesScanned} pages`;
                 metadata["Comments/Annotations"] = `${annotationCount} found (${scope})`;
+                if (commentSnippets.length > 0) {
+                    metadata["Annotation Comments"] = commentSnippets.join("\n");
+                }
             }
         } catch (e) { }
 
@@ -117,10 +177,6 @@ async function parsePDF(arrayBuffer) {
 
     if (!metadata["Encryption"]) {
         metadata["Encryption"] = text.includes("/Encrypt") ? "Encrypted" : "Not encrypted";
-    }
-
-    if (!metadata["Comments/Annotations"] && /\/Annots\s*\[/.test(text)) {
-        metadata["Comments/Annotations"] = "Annotation objects detected (not fully counted)";
     }
 
     return metadata;

@@ -111,7 +111,7 @@ const MetadataSection = ({ title, data, children, icon }) => {
                     {data && Object.entries(data).map(([k, v]) => (
                         <div key={k}>
                             <span className="text-xs text-slate-500 uppercase font-bold block mb-1">{k}</span>
-                            <span className="text-sm text-slate-200 font-mono break-words">{v}</span>
+                            <span className="text-sm text-slate-200 font-mono break-words whitespace-pre-wrap">{v}</span>
                         </div>
                     ))}
                 </div>
