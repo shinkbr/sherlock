@@ -158,7 +158,7 @@ const App = () => {
 
                 if (zipEncrypted !== null) {
                     metadata = metadata || {};
-                    metadata["ZIP Encryption"] = zipEncrypted ? "Encrypted entries detected" : "Not encrypted (per flags)";
+                    metadata["ZIP Encryption"] = zipEncrypted ? "Encrypted entries detected" : "Not encrypted";
                 }
             } else if (magicHex.startsWith("1F8B") || ['gz', 'tgz'].includes(ext)) {
                 const gzipInfo = parseGzip(selectedFile, arrayBuffer, ext);
