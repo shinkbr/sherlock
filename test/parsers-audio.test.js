@@ -27,6 +27,38 @@ describe('Audio Parser', () => {
         expect(res.Artist).toBe('Britney');
     });
 
+    it('should handle Malformed WAV', () => {
+        // Trigger generic catch block in parseWAV
+        // Buffer must be >= 44 to pass initial check.
+        // We want 'fmt ' chunk access to throw RangeError.
+        // fmt reads up to offset+24.
+        // If we place 'fmt ' at offset 40, 40+24=64 > 50 (buffer size).
+        // To get to 40, we need a filler chunk at 12.
+        // 12 + 8 + Size = 40 => Size = 20.
+
+        const buffer = new ArrayBuffer(50);
+        const view = new DataView(buffer);
+
+        // Chunk 1 at 12: "JUNK", size 20
+        view.setUint8(12, 0x4A); // J
+        view.setUint8(13, 0x55); // U
+        view.setUint8(14, 0x4E); // N
+        view.setUint8(15, 0x4B); // K
+        view.setUint32(16, 20, true);
+
+        // Chunk 2 at 40: "fmt ", size 16
+        // Loop check: 40 + 8 = 48 <= 50. Safe.
+        // Inside: read offset+22 (62) -> throws.
+        view.setUint8(40, 0x66); // f
+        view.setUint8(41, 0x6d); // m
+        view.setUint8(42, 0x74); // t
+        view.setUint8(43, 0x20); // ' '
+        view.setUint32(44, 16, true);
+
+        const res = parseAudio({}, buffer, 'WAV Audio');
+        expect(res).toEqual({});
+    });
+
     it('should parse WAV fmt chunk', () => {
         // Mock WAV header
         // RIFF (4) + Size (4) + WAVE (4) + fmt (4) + Size (4) + AudioFormat(2) + NumChannels(2) + SampleRate(4) ...
@@ -153,5 +185,77 @@ describe('Audio Parser', () => {
         const res = parseAudio({}, buffer, 'OGG Audio');
         expect(res['Container']).toBe('Ogg');
         expect(res['Codec']).toBe('Vorbis');
+    });
+
+    it('should parse FLAC Vorbis Comment', () => {
+        const buffer = new ArrayBuffer(200);
+        const view = new DataView(buffer);
+        const u8 = new Uint8Array(buffer);
+
+        // fLaC
+        u8.set([0x66, 0x4c, 0x61, 0x43], 0);
+
+        // Block 0: Vorbis Comment (4) | Last (0x80) -> 0x84
+        view.setUint8(4, 0x84);
+
+        // Length 50
+        view.setUint8(5, 0);
+        view.setUint8(6, 0);
+        view.setUint8(7, 50);
+
+        // Offset 8 start.
+        // Vendor String Length (4 bytes LE) = 3
+        view.setUint32(8, 3, true);
+        // Vendor String (3 bytes)
+        u8.set([0x61, 0x62, 0x63], 12); // "abc"
+
+        // Comment List Length (4 bytes LE) at 15
+        view.setUint32(15, 1, true); // 1 comment
+
+        // Comment 0 Length (4 bytes LE) at 19
+        const commentStr = "TITLE=Hello";
+        view.setUint32(19, commentStr.length, true);
+
+        // Comment string at 23
+        for (let i = 0; i < commentStr.length; i++) {
+            u8[23 + i] = commentStr.charCodeAt(i);
+        }
+
+        const res = parseAudio({}, buffer, 'FLAC Audio');
+        expect(res.TITLE).toBe('Hello');
+    });
+
+    it('should handle FLAC parse errors gracefully', () => {
+        const buffer = new ArrayBuffer(10);
+        const u8 = new Uint8Array(buffer);
+        // fLaC
+        u8.set([0x66, 0x4c, 0x61, 0x43], 0);
+        // Malformed block header causing huge length
+        const view = new DataView(buffer);
+        view.setUint8(4, 0x00);
+        view.setUint8(5, 0xFF);
+        view.setUint8(6, 0xFF);
+        view.setUint8(7, 0xFF);
+
+        const res = parseAudio({}, buffer, 'FLAC Audio');
+        expect(res).toEqual({});
+    });
+
+    it('should detect OGG container codecs', () => {
+        const buffer = new ArrayBuffer(100);
+        const u8 = new Uint8Array(buffer);
+        u8.set([0x4f, 0x67, 0x67, 0x53], 0); // OggS
+
+        // Theora
+        const codecStr = "theora";
+        for (let i = 0; i < codecStr.length; i++) u8[50 + i] = codecStr.charCodeAt(i);
+        let res = parseAudio({}, buffer, 'OGG Audio');
+        expect(res.Codec).toBe('Theora');
+
+        // Opus
+        const codecStr2 = "opus";
+        for (let i = 0; i < codecStr2.length; i++) u8[50 + i] = codecStr2.charCodeAt(i);
+        res = parseAudio({}, buffer, 'OGG Audio');
+        expect(res.Codec).toBe('Opus');
     });
 });
