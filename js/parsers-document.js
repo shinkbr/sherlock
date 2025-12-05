@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import JSZip from 'jszip';
+import exifr from 'exifr';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -251,6 +252,69 @@ async function parseOfficeXML(file) {
             if (totalComments > 0) {
                 props["Comments Count"] = totalComments;
                 if (authors.size > 0) props["Comment Authors"] = Array.from(authors).join(", ");
+            }
+        }
+
+        // --- Embedded File Analysis ---
+        const mediaFiles = Object.keys(zip.files).filter(path =>
+            path.startsWith("word/media/") ||
+            path.startsWith("xl/media/") ||
+            path.startsWith("ppt/media/")
+        );
+
+        if (mediaFiles.length > 0) {
+            props["Embedded Files"] = `${mediaFiles.length} found`;
+
+            const exifDataToCheck = [];
+            for (const path of mediaFiles) {
+                // simple extension check
+                if (/\.(jpe?g|png|tiff?|heic)$/i.test(path)) {
+                    exifDataToCheck.push(path);
+                }
+            }
+
+            if (exifDataToCheck.length > 0) {
+                let analyzedCount = 0;
+                const analysisResults = [];
+
+                for (const path of exifDataToCheck) {
+                    try {
+                        const arrayBuffer = await zip.file(path).async("arraybuffer");
+                        // Only looking for critical metadata to avoid clutter
+                        const tags = await exifr.parse(arrayBuffer, {
+                            tiff: true,
+                            exif: true,
+                            gps: true,
+                            ifd0: true, // Make, Model often here
+                            xmp: false,
+                            icc: false,
+                            mergeOutput: true
+                        });
+
+                        if (tags) {
+                            const interesting = {};
+                            if (tags.Make) interesting.Make = tags.Make;
+                            if (tags.Model) interesting.Model = tags.Model;
+                            if (tags.Software) interesting.Software = tags.Software;
+                            if (tags.DateTimeOriginal) interesting.Date = tags.DateTimeOriginal;
+                            if (tags.GPSLatitude && tags.GPSLongitude) {
+                                interesting.GPS = `${tags.GPSLatitude}, ${tags.GPSLongitude}`;
+                            }
+
+                            if (Object.keys(interesting).length > 0) {
+                                const details = Object.entries(interesting).map(([k, v]) => `${k}: ${v}`).join(", ");
+                                analysisResults.push(`[${path.split('/').pop()}] ${details}`);
+                                analyzedCount++;
+                            }
+                        }
+                    } catch (e) {
+                        // ignore corrupt images or unsupported formats silently
+                    }
+                }
+
+                if (analysisResults.length > 0) {
+                    props["Embedded EXIF"] = analysisResults.join("\n");
+                }
             }
         }
 

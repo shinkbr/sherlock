@@ -58,4 +58,29 @@ describe('parsers-document', () => {
         expect(props['⚠️ Hidden Sheets']).toContain('HiddenSheet');
         expect(props['Comment Authors']).toContain('Alice');
     });
+
+    it('analyzes embedded media files for EXIF data', async () => {
+        window.JSZip = JSZip;
+        const zip = new JSZip();
+        zip.file('word/media/image1.jpg', new Uint8Array([0xFF, 0xD8, 0xFF])); // Pseudo JPEG
+
+        // Mock exifr.parse behavior
+        const exifr = await import('exifr');
+        exifr.default.parse = async () => ({
+            Make: 'CameraMaker',
+            Model: 'CameraModel',
+            DateTimeOriginal: '2024:01:01 12:00:00',
+            GPSLatitude: 35.6895,
+            GPSLongitude: 139.6917
+        });
+
+        const blob = await zip.generateAsync({ type: 'uint8array' });
+        const props = await parseOfficeXML(new Blob([blob]));
+
+        expect(props['Embedded Files']).toBe('1 found');
+        expect(props['Embedded EXIF']).toContain('image1.jpg');
+        expect(props['Embedded EXIF']).toContain('CameraMaker');
+        expect(props['Embedded EXIF']).toContain('CameraModel');
+        expect(props['Embedded EXIF']).toContain('Lat, Long: 35.6895, 139.6917'); // Approximate format check
+    });
 });
