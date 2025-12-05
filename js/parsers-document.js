@@ -257,9 +257,11 @@ async function parseOfficeXML(file) {
 
         // --- Embedded File Analysis ---
         const mediaFiles = Object.keys(zip.files).filter(path =>
-            path.startsWith("word/media/") ||
-            path.startsWith("xl/media/") ||
-            path.startsWith("ppt/media/")
+            !zip.files[path].dir && (
+                path.startsWith("word/media/") ||
+                path.startsWith("xl/media/") ||
+                path.startsWith("ppt/media/")
+            )
         );
 
         if (mediaFiles.length > 0) {
