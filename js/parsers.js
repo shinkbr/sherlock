@@ -13,6 +13,9 @@ import {
 } from './parsers-binary.js';
 import { parseVideo } from './parsers-media.js';
 import { parsePDF, parseOfficeXML } from './parsers-document.js';
+import { parseAudio } from './parsers-audio.js';
+import { parseFont } from './parsers-font.js';
+import { parseSQLite } from './parsers-db.js';
 
 export {
     identifyFileType,
@@ -30,7 +33,10 @@ export {
     parseMachO,
     parseVideo,
     parsePDF,
-    parseOfficeXML
+    parseOfficeXML,
+    parseAudio,
+    parseFont,
+    parseSQLite
 };
 
 export const Parsers = {
@@ -49,5 +55,8 @@ export const Parsers = {
     parseMachO,
     parseVideo,
     parsePDF,
-    parseOfficeXML
+    parseOfficeXML,
+    parseAudio,
+    parseFont,
+    parseSQLite
 };

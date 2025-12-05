@@ -114,7 +114,21 @@ function isLikelyText(u8) {
 function identifyFileType(view, hex) {
     const signatures = FILE_SIGNATURES || [];
     for (const sig of signatures) {
-        if (hex.startsWith(sig.sig)) return sig.type;
+        if (hex.startsWith(sig.sig)) {
+            // Refine RIFF
+            if (sig.sig === '52494646' && hex.length >= 24) {
+                const type = String.fromCharCode(
+                    view.getUint8(8),
+                    view.getUint8(9),
+                    view.getUint8(10),
+                    view.getUint8(11)
+                );
+                if (type === 'WAVE') return 'WAV Audio';
+                if (type === 'AVI ') return 'AVI Video';
+                return `RIFF Container (${type.trim()})`;
+            }
+            return sig.type;
+        }
     }
     try {
         if (hex.length >= 16) {

@@ -26,7 +26,10 @@ import {
     parseMachO,
     parseVideo,
     parsePDF,
-    parseOfficeXML
+    parseOfficeXML,
+    parseAudio,
+    parseFont,
+    parseSQLite
 } from './parsers.js';
 
 import {
@@ -209,7 +212,8 @@ const App = () => {
                 } else if (
                     detectedFormat.includes('ISO') ||
                     ['mp4', 'mkv', 'avi', 'mov'].includes(ext) ||
-                    magicHex.startsWith('1A45')
+                    magicHex.startsWith('1A45') ||
+                    detectedFormat.includes('AVI Video')
                 ) {
                     const videoMeta = await parseVideo(
                         selectedFile,
@@ -221,6 +225,18 @@ const App = () => {
                     if (videoMeta.gps) gps = videoMeta.gps;
                 } else if (magicHex.startsWith('25504446')) {
                     metadata = await parsePDF(arrayBuffer);
+                } else if (
+                    detectedFormat.includes('Audio') ||
+                    ['mp3', 'wav', 'flac', 'ogg'].includes(ext)
+                ) {
+                    metadata = parseAudio(selectedFile, arrayBuffer, detectedFormat.toUpperCase());
+                } else if (
+                    detectedFormat.includes('Font') ||
+                    ['ttf', 'otf', 'woff', 'woff2'].includes(ext)
+                ) {
+                    metadata = parseFont(arrayBuffer);
+                } else if (detectedFormat.includes('SQLite') || ext === 'sqlite' || ext === 'db') {
+                    metadata = parseSQLite(arrayBuffer);
                 }
             }
 

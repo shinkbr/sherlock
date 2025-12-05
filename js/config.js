@@ -20,6 +20,13 @@ export const FILE_SIGNATURES = [
     { sig: '1A45DFA3', type: 'Matroska Video (MKV/WebM)' },
     { sig: '464C4143', type: 'FLAC Audio' },
     { sig: '494433', type: 'MP3 Audio (ID3)' },
+    { sig: '4F676753', type: 'OGG Container' },
+    { sig: '52494646', type: 'RIFF Container (AVI/WAV)' },
+    { sig: '00010000', type: 'TrueType Font (TTF)' },
+    { sig: '4F54544F', type: 'OpenType Font (OTF)' },
+    { sig: '774F4646', type: 'Web Open Font Format (WOFF)' },
+    { sig: '774F4632', type: 'Web Open Font Format 2.0 (WOFF2)' },
+    { sig: '53514C69', type: 'SQLite Database' },
     { sig: 'D0CF11E0', type: 'Microsoft Office (Legacy)' },
     { sig: '2321', type: 'Script (Shebang)' }
 ];
