@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer components {
-
     /* Drop Zone Animations */
     .drop-zone {
         transition: all 0.3s ease;

@@ -14,10 +14,15 @@ function getMagicBytes(view, len = 4, offset = 0) {
     let hex = '';
     try {
         for (let i = 0; i < len; i++) {
-            const byte = view.getUint8(offset + i).toString(16).toUpperCase();
-            hex += (byte.length === 1 ? '0' + byte : byte);
+            const byte = view
+                .getUint8(offset + i)
+                .toString(16)
+                .toUpperCase();
+            hex += byte.length === 1 ? '0' + byte : byte;
         }
-    } catch (e) { }
+    } catch {
+        /* ignore */
+    }
     return hex;
 }
 
@@ -25,21 +30,21 @@ function crc32(arrayBuffer) {
     const table = new Uint32Array(256);
     for (let i = 0; i < 256; i++) {
         let c = i;
-        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
         table[i] = c;
     }
     const u8 = new Uint8Array(arrayBuffer);
-    let crc = 0 ^ (-1);
-    for (let i = 0; i < u8.length; i++) crc = (crc >>> 8) ^ table[(crc ^ u8[i]) & 0xFF];
-    return (crc ^ (-1)) >>> 0;
+    let crc = 0 ^ -1;
+    for (let i = 0; i < u8.length; i++) crc = (crc >>> 8) ^ table[(crc ^ u8[i]) & 0xff];
+    return (crc ^ -1) >>> 0;
 }
 
 async function calculateHashes(arrayBuffer) {
-    let md5 = "Error";
+    let md5 = 'Error';
     try {
         md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
     } catch (e) {
-        console.error("MD5 calculation error", e);
+        console.error('MD5 calculation error', e);
     }
 
     const sha1Buffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
@@ -66,12 +71,15 @@ function calculateEntropy(u8) {
 }
 
 function bufferToHex(buffer) {
-    return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(buffer))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
 }
 
 function formatBytes(bytes, decimals = 2) {
     if (!+bytes) return '0 Bytes';
-    const k = 1024; const dm = decimals < 0 ? 0 : decimals;
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
@@ -85,9 +93,18 @@ function isLikelyText(u8) {
     let controlish = 0;
     for (let i = 0; i < sample.length; i++) {
         const b = sample[i];
-        if (b === 0) { controlish++; continue; }
-        if ((b >= 7 && b <= 13) || (b >= 32 && b <= 126)) { printable++; continue; }
-        if (b >= 0xC2 && b <= 0xF4) { printable++; continue; } // likely UTF-8 multi-byte lead
+        if (b === 0) {
+            controlish++;
+            continue;
+        }
+        if ((b >= 7 && b <= 13) || (b >= 32 && b <= 126)) {
+            printable++;
+            continue;
+        }
+        if (b >= 0xc2 && b <= 0xf4) {
+            printable++;
+            continue;
+        } // likely UTF-8 multi-byte lead
         controlish++;
     }
     const ratio = printable / sample.length;
@@ -101,22 +118,30 @@ function identifyFileType(view, hex) {
     }
     try {
         if (hex.length >= 16) {
-            const ftyp = String.fromCharCode(view.getUint8(4), view.getUint8(5), view.getUint8(6), view.getUint8(7));
+            const ftyp = String.fromCharCode(
+                view.getUint8(4),
+                view.getUint8(5),
+                view.getUint8(6),
+                view.getUint8(7)
+            );
             if (ftyp === 'ftyp') return `ISO Media / MP4`;
         }
-    } catch (e) { }
+    } catch {
+        /* ignore */
+    }
     return null;
 }
 
 // Extract printable strings similar to UNIX `strings`
 function extractStrings(u8, minLen = 4, maxStrings = 1000) {
     const strings = [];
-    let current = "";
+    let current = '';
 
-    const isPrintable = (b) => (
+    const isPrintable = (b) =>
         (b >= 32 && b <= 126) || // visible ASCII
-        b === 9 || b === 10 || b === 13 // tab / newline / carriage return
-    );
+        b === 9 ||
+        b === 10 ||
+        b === 13; // tab / newline / carriage return
 
     for (let i = 0; i < u8.length; i++) {
         const b = u8[i];
@@ -127,7 +152,7 @@ function extractStrings(u8, minLen = 4, maxStrings = 1000) {
                 strings.push(current);
                 if (strings.length >= maxStrings) break;
             }
-            current = "";
+            current = '';
         }
     }
 

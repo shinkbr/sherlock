@@ -14,7 +14,6 @@ vi.mock('exifr', () => ({
     }
 }));
 
-
 describe('parsers-document', () => {
     it('formats PDF date strings into locale output', () => {
         const formatted = formatPDFDate('D:20240101123000Z');
@@ -46,13 +45,18 @@ describe('parsers-document', () => {
     it('parses Office OpenXML properties from a zip', async () => {
         window.JSZip = JSZip;
         const zip = new JSZip();
-        zip.file('docProps/app.xml', `<Properties>
+        zip.file(
+            'docProps/app.xml',
+            `<Properties>
             <Company>ACME Co</Company>
             <Manager>Manager Name</Manager>
             <Application>Word</Application>
             <AppVersion>16.0</AppVersion>
-        </Properties>`);
-        zip.file('docProps/core.xml', `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
+        </Properties>`
+        );
+        zip.file(
+            'docProps/core.xml',
+            `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
             <dc:creator>Carol</dc:creator>
             <cp:lastModifiedBy>Dave</cp:lastModifiedBy>
             <dcterms:created>2024-01-01</dcterms:created>
@@ -60,9 +64,16 @@ describe('parsers-document', () => {
             <dc:subject>Subject</dc:subject>
             <dc:title>Title</dc:title>
             <cp:keywords>tag1,tag2</cp:keywords>
-        </cp:coreProperties>`);
-        zip.file('xl/workbook.xml', `<workbook><sheets><sheet name="HiddenSheet" state="hidden"/></sheets></workbook>`);
-        zip.file('xl/comments1.xml', `<comments xmlns:w="w"><w:comment w:author="Alice"><w:p><w:r><w:t>This is a comment.</w:t></w:r></w:p></w:comment></comments>`);
+        </cp:coreProperties>`
+        );
+        zip.file(
+            'xl/workbook.xml',
+            `<workbook><sheets><sheet name="HiddenSheet" state="hidden"/></sheets></workbook>`
+        );
+        zip.file(
+            'xl/comments1.xml',
+            `<comments xmlns:w="w"><w:comment w:author="Alice"><w:p><w:r><w:t>This is a comment.</w:t></w:r></w:p></w:comment></comments>`
+        );
 
         const blob = await zip.generateAsync({ type: 'uint8array' });
         const props = await parseOfficeXML(new Blob([blob]));
@@ -77,7 +88,7 @@ describe('parsers-document', () => {
     it('analyzes embedded media files for EXIF data', async () => {
         window.JSZip = JSZip;
         const zip = new JSZip();
-        zip.file('word/media/image1.jpg', new Uint8Array([0xFF, 0xD8, 0xFF])); // Pseudo JPEG
+        zip.file('word/media/image1.jpg', new Uint8Array([0xff, 0xd8, 0xff])); // Pseudo JPEG
 
         const blob = await zip.generateAsync({ type: 'uint8array' });
         const props = await parseOfficeXML(new Blob([blob]));

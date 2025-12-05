@@ -20,20 +20,20 @@ function buildPEView() {
     const view = new DataView(buffer);
     const e_lfanew = 0x80;
 
-    view.setUint32(0x3C, e_lfanew, true);
+    view.setUint32(0x3c, e_lfanew, true);
     view.setUint32(e_lfanew, 0x4550, true); // "PE\0\0"
-    view.setUint16(e_lfanew + 4, 0x14C, true);
+    view.setUint16(e_lfanew + 4, 0x14c, true);
     view.setUint16(e_lfanew + 6, 2, true); // two sections
-    view.setUint32(e_lfanew + 8, 0x5E2D1B3A, true); // timestamp
-    view.setUint16(e_lfanew + 20, 0xE0, true); // optional header size
+    view.setUint32(e_lfanew + 8, 0x5e2d1b3a, true); // timestamp
+    view.setUint16(e_lfanew + 20, 0xe0, true); // optional header size
 
     const optHeader = e_lfanew + 24;
-    view.setUint16(optHeader, 0x10B, true); // PE32
+    view.setUint16(optHeader, 0x10b, true); // PE32
     view.setUint32(optHeader + 92, 2, true); // number of data directories
     view.setUint32(optHeader + 96, 0x2000, true); // export RVA
     view.setUint32(optHeader + 104, 0x3000, true); // import RVA
 
-    const secTable = optHeader + 0xE0;
+    const secTable = optHeader + 0xe0;
     const writeSection = (offset, name, vaddr, rawPtr, charact) => {
         setString(view, offset, name);
         view.setUint32(offset + 8, 0x200, true); // virtual size
@@ -44,7 +44,7 @@ function buildPEView() {
     };
 
     writeSection(secTable, '.text', 0x2000, 0x400, 0x60000020);
-    writeSection(secTable + 40, '.idata', 0x3000, 0xA00, 0xC0000040);
+    writeSection(secTable + 40, '.idata', 0x3000, 0xa00, 0xc0000040);
 
     // Export table
     const exportDir = 0x400;
@@ -56,18 +56,18 @@ function buildPEView() {
     view.setUint32(exportDir + 36, 0x2180, true); // ord table RVA
 
     view.setUint32(0x500, 0x2000, true); // func table entry
-    view.setUint32(0x540, 0x21C0, true); // name table entry
+    view.setUint32(0x540, 0x21c0, true); // name table entry
     view.setUint16(0x580, 0, true); // ordinal table entry
-    setString(view, 0x5C0, 'exported');
+    setString(view, 0x5c0, 'exported');
 
     // Import table
-    const impDesc = 0xA00;
+    const impDesc = 0xa00;
     view.setUint32(impDesc + 12, 0x3050, true); // name RVA
     view.setUint32(impDesc + 16, 0x3060, true); // thunk RVA
-    setString(view, 0xA50, 'KERNEL32.dll');
-    view.setUint32(0xA60, 0x3080, true); // first thunk entry
-    view.setUint16(0xA80, 1, true); // hint
-    setString(view, 0xA82, 'CreateFile');
+    setString(view, 0xa50, 'KERNEL32.dll');
+    view.setUint32(0xa60, 0x3080, true); // first thunk entry
+    view.setUint16(0xa80, 1, true); // hint
+    setString(view, 0xa82, 'CreateFile');
 
     return view;
 }
@@ -76,9 +76,9 @@ function buildELFView() {
     const buffer = new ArrayBuffer(0x800);
     const view = new DataView(buffer);
     const u8 = new Uint8Array(buffer);
-    u8.set([0x7F, 0x45, 0x4C, 0x46, 0x02, 0x01, 0x01, 0x00], 0);
+    u8.set([0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01, 0x01, 0x00], 0);
 
-    view.setUint16(18, 0x3E, true); // x86_64
+    view.setUint16(18, 0x3e, true); // x86_64
     view.setBigUint64(32, 0x40n, true); // e_phoff
     view.setBigUint64(40, 0x300n, true); // e_shoff
     view.setUint16(54, 56, true); // e_phentsize
@@ -152,7 +152,7 @@ function buildELFView() {
 function buildMachOView() {
     const buffer = new ArrayBuffer(0x400);
     const view = new DataView(buffer);
-    const magic = 0xFEEDFACF;
+    const magic = 0xfeedfacf;
 
     view.setUint32(0, magic, false); // MH_MAGIC_64 (big-endian)
     view.setUint32(4, 0x01000007, false); // x86_64
@@ -189,7 +189,7 @@ function buildMachOView() {
 
     // symbol table
     view.setUint32(0x200, 1, false); // strx after leading null
-    view.setUint8(0x204, 0x0E | 0x01); // type SECT + EXT
+    view.setUint8(0x204, 0x0e | 0x01); // type SECT + EXT
     view.setBigUint64(0x208, 0x1000n, false); // value
 
     // String table starts with a null byte; place "_main" at offset 1.
@@ -205,11 +205,13 @@ describe('parsers-binary', () => {
         expect(metadata.Machine).toBe('14c');
 
         const sections = parsePESections(view, e_lfanew);
-        expect(sections.map(s => s.name)).toEqual(['.text', '.idata']);
+        expect(sections.map((s) => s.name)).toEqual(['.text', '.idata']);
 
         const symbols = parsePESymbols(view, e_lfanew);
-        expect(symbols.some(s => s.name === 'exported' && s.type === 'EXPORT')).toBe(true);
-        expect(symbols.some(s => s.name === 'KERNEL32.dll!CreateFile' && s.type === 'IMPORT')).toBe(true);
+        expect(symbols.some((s) => s.name === 'exported' && s.type === 'EXPORT')).toBe(true);
+        expect(
+            symbols.some((s) => s.name === 'KERNEL32.dll!CreateFile' && s.type === 'IMPORT')
+        ).toBe(true);
 
         const imports = parsePEImports(view, e_lfanew);
         expect(imports['KERNEL32.dll']).toContain('CreateFile');
@@ -220,7 +222,7 @@ describe('parsers-binary', () => {
         expect(parseELF(view)).toMatchObject({ Arch: 'x64', Class: '64-bit', Endian: 'Little' });
 
         const sections = parseELFSections(view);
-        expect(sections.map(s => s.name)).toContain('.dynsym');
+        expect(sections.map((s) => s.name)).toContain('.dynsym');
 
         const symbols = parseELFSymbols(view);
         expect(symbols.length).toBeGreaterThan(0);
@@ -235,7 +237,7 @@ describe('parsers-binary', () => {
         const view = buildMachOView();
         const { metadata, sections, symbols } = parseMachO(view);
         expect(metadata['Mach-O']).toContain('64-bit');
-        expect(sections.some(s => s.name === '__text')).toBe(true);
-        expect(symbols.some(s => s.name === '_main')).toBe(true);
+        expect(sections.some((s) => s.name === '__text')).toBe(true);
+        expect(symbols.some((s) => s.name === '_main')).toBe(true);
     });
 });

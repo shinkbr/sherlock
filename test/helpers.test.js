@@ -20,7 +20,7 @@ describe('helpers', () => {
     });
 
     it('gets magic bytes with offsets applied', () => {
-        const buffer = new Uint8Array([0x00, 0x4D, 0x5A, 0x90, 0xFF]).buffer;
+        const buffer = new Uint8Array([0x00, 0x4d, 0x5a, 0x90, 0xff]).buffer;
         const view = new DataView(buffer);
         expect(getMagicBytes(view)).toBe('004D5A90');
         expect(getMagicBytes(view, 3, 2)).toBe('5A90FF');
@@ -31,7 +31,9 @@ describe('helpers', () => {
         const hashes = await calculateHashes(buffer);
         expect(hashes.md5).toBe('5d41402abc4b2a76b9719d911017c592');
         expect(hashes.sha1).toBe('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
-        expect(hashes.sha256).toBe('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+        expect(hashes.sha256).toBe(
+            '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
+        );
         const expectedCrc = crc32(buffer).toString(16).padStart(8, '0');
         expect(hashes.crc32).toBe(expectedCrc);
     });
@@ -65,15 +67,24 @@ describe('helpers', () => {
 
     it('detects likely text buffers', () => {
         const text = new TextEncoder().encode('Hello world\nThis is text');
-        const binary = new Uint8Array([0x00, 0xFF, 0x10, 0x01, 0x00]);
+        const binary = new Uint8Array([0x00, 0xff, 0x10, 0x01, 0x00]);
         expect(isLikelyText(text)).toBe(true);
         expect(isLikelyText(binary)).toBe(false);
     });
 
     it('extracts printable strings from binary buffers', () => {
         const bytes = new Uint8Array([
-            0x00, 0x41, 0x42, 0x43, 0x00, // "ABC"
-            0x7F, 0x44, 0x45, 0x46, 0x47, 0x00 // "DEFG"
+            0x00,
+            0x41,
+            0x42,
+            0x43,
+            0x00, // "ABC"
+            0x7f,
+            0x44,
+            0x45,
+            0x46,
+            0x47,
+            0x00 // "DEFG"
         ]);
         expect(extractStrings(bytes, 3)).toEqual(['ABC', 'DEFG']);
     });

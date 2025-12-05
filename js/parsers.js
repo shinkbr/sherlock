@@ -1,9 +1,5 @@
 import { identifyFileType } from './helpers.js';
-import {
-    parseZipContents,
-    parseTarArchive,
-    parseGzip
-} from './parsers-archive.js';
+import { parseZipContents, parseTarArchive, parseGzip } from './parsers-archive.js';
 import {
     parsePE,
     parsePESections,
@@ -55,5 +51,3 @@ export const Parsers = {
     parsePDF,
     parseOfficeXML
 };
-
-

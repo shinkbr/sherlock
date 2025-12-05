@@ -10,8 +10,8 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 - Hex dump: first 4 KB.
 - Strings: printable strings.
 - Imports:
-  - PE: import table parsing (DLLs + functions, ordinal support).
-  - ELF: DT_NEEDED shared libraries and undefined/imported symbols.
+    - PE: import table parsing (DLLs + functions, ordinal support).
+    - ELF: DT_NEEDED shared libraries and undefined/imported symbols.
 - Archives: ZIP listing (name, size, CRC), TAR/TAR.GZ/GZ inspection with basic metadata, with limits to avoid huge dumps.
 - Office OpenXML (docx/xlsx/pptx): creator, last modified, created/modified timestamps, application info, hidden sheets, comments, macro detection (vbaProject.bin).
 - Images: EXIF/XMP/ICC extraction via exifr; GPS mapped inline + link to Google Maps.
@@ -20,24 +20,24 @@ Sherlock is a browser-based file forensics viewer. Drop a file into the page to 
 
 ## Supported File Types
 
-| Category | File types | Information extracted in Sherlock |
-| --- | --- | --- |
-| All files | Any | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 4 KB), printable strings |
-| Executables | EXE, DLL, ELF, Mach-O | Machine type, compile timestamp, sections (addresses/flags), imports/exports, symbols |
-| Documents | PDF | Version, title, author, creator, producer, subject, keywords, created/modified dates, encryption status, sampled annotation count |
-| Office | DOCX, XLSX, PPTX | Creator/last modified by, created/modified timestamps, application info, hidden sheets, comment count/authors, macro detection |
-| Images | JPEG, PNG, TIFF, HEIC, GIF, BMP, PSD, ICO | EXIF/XMP/ICC metadata, GPS coordinates |
-| Media | MP4, MOV, MKV, AVI, WMV, ASF | Container detection plus video duration and resolution |
-| Archives | ZIP, TAR, GZ, TGZ | ZIP central directory listing (name/size/CRC, encryption flag); TAR/TAR.GZ file listing; GZ header metadata (original name/OS/mtime); other archives detected with hashes/hex/strings |
+| Category    | File types                                | Information extracted in Sherlock                                                                                                                                                     |
+| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All files   | Any                                       | Magic/format detection, hashes (SHA-256/SHA-1/MD5/CRC32), entropy, hex preview (first 4 KB), printable strings                                                                        |
+| Executables | EXE, DLL, ELF, Mach-O                     | Machine type, compile timestamp, sections (addresses/flags), imports/exports, symbols                                                                                                 |
+| Documents   | PDF                                       | Version, title, author, creator, producer, subject, keywords, created/modified dates, encryption status, sampled annotation count                                                     |
+| Office      | DOCX, XLSX, PPTX                          | Creator/last modified by, created/modified timestamps, application info, hidden sheets, comment count/authors, macro detection                                                        |
+| Images      | JPEG, PNG, TIFF, HEIC, GIF, BMP, PSD, ICO | EXIF/XMP/ICC metadata, GPS coordinates                                                                                                                                                |
+| Media       | MP4, MOV, MKV, AVI, WMV, ASF              | Container detection plus video duration and resolution                                                                                                                                |
+| Archives    | ZIP, TAR, GZ, TGZ                         | ZIP central directory listing (name/size/CRC, encryption flag); TAR/TAR.GZ file listing; GZ header metadata (original name/OS/mtime); other archives detected with hashes/hex/strings |
 
 ## Usage
 
-1) Open `index.html` in a modern browser.  
-2) Drag-and-drop a file or click the drop zone to browse.  
-3) Review the cards: hashes/entropy, metadata, imports, archive contents, hex, strings, and map (if GPS exists).
+1. Open `index.html` in a modern browser.
+2. Drag-and-drop a file or click the drop zone to browse.
+3. Review the cards: hashes/entropy, metadata, imports, archive contents, hex, strings, and map (if GPS exists).
 
 ## Notes & Limits
 
-- Parsing is intentionally shallow for speed and safety; very large files may be truncated (e.g., hex to 4 KB, strings capped).  
-- All processing is client-side; ensure required CDN scripts (React, exifr, JSZip, pako) load when running offline.  
-- No persistence or uploads are performed.***
+- Parsing is intentionally shallow for speed and safety; very large files may be truncated (e.g., hex to 4 KB, strings capped).
+- All processing is client-side; ensure required CDN scripts (React, exifr, JSZip, pako) load when running offline.
+- No persistence or uploads are performed.\*\*\*

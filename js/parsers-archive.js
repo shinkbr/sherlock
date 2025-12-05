@@ -2,7 +2,7 @@ import { formatBytes } from './helpers.js';
 import pako from 'pako';
 import JSZip from 'jszip';
 
-const decoder = new TextDecoder("utf-8");
+const decoder = new TextDecoder('utf-8');
 
 function parseTarArchive(bufferLike) {
     const u8 = bufferLike instanceof Uint8Array ? bufferLike : new Uint8Array(bufferLike);
@@ -23,7 +23,7 @@ function parseTarArchive(bufferLike) {
 
     while (offset + 512 <= u8.length) {
         const block = u8.subarray(offset, offset + 512);
-        const isEmpty = block.every(b => b === 0);
+        const isEmpty = block.every((b) => b === 0);
         if (isEmpty) break; // end-of-archive marker
 
         const name = readString(offset, 100);
@@ -32,10 +32,10 @@ function parseTarArchive(bufferLike) {
         const isDir = typeFlag === '5' || name.endsWith('/');
 
         files.push({
-            name: name || "(unnamed entry)",
+            name: name || '(unnamed entry)',
             dir: isDir,
             size: formatBytes(size),
-            crc: "N/A",
+            crc: 'N/A',
             encrypted: false
         });
 
@@ -48,29 +48,29 @@ function parseTarArchive(bufferLike) {
     return { files };
 }
 
-function parseGzip(file, arrayBuffer, ext = "") {
+function parseGzip(file, arrayBuffer, ext = '') {
     const u8 = new Uint8Array(arrayBuffer);
     const view = new DataView(arrayBuffer);
-    if (u8.length < 10) return { metadata: { "GZIP Error": "File too small" }, files: [] };
+    if (u8.length < 10) return { metadata: { 'GZIP Error': 'File too small' }, files: [] };
 
     const flags = u8[3];
     let offset = 10;
     const osMap = {
-        0: "FAT",
-        1: "Amiga",
-        2: "VMS",
-        3: "Unix",
-        4: "VMCMS",
-        5: "Atari TOS",
-        6: "HPFS",
-        7: "Macintosh",
-        8: "Z-System",
-        9: "CP/M",
-        10: "TOPS-20",
-        11: "NTFS",
-        12: "QDOS",
-        13: "Acorn RISCOS",
-        255: "Unknown"
+        0: 'FAT',
+        1: 'Amiga',
+        2: 'VMS',
+        3: 'Unix',
+        4: 'VMCMS',
+        5: 'Atari TOS',
+        6: 'HPFS',
+        7: 'Macintosh',
+        8: 'Z-System',
+        9: 'CP/M',
+        10: 'TOPS-20',
+        11: 'NTFS',
+        12: 'QDOS',
+        13: 'Acorn RISCOS',
+        255: 'Unknown'
     };
 
     if (flags & 0x04) {
@@ -86,24 +86,30 @@ function parseGzip(file, arrayBuffer, ext = "") {
         return str;
     };
 
-    let originalName = null, comment = null;
+    let originalName = null,
+        comment = null;
     if (flags & 0x08) originalName = readNullTerminated();
     if (flags & 0x10) comment = readNullTerminated();
     if (flags & 0x02) offset += 2; // header CRC16
 
     const mtime = view.getUint32(4, true);
     const metadata = {
-        "GZIP Method": u8[2] === 8 ? "Deflate" : `Unknown (${u8[2]})`,
-        "GZIP OS": osMap[u8[9]] || `Unknown (${u8[9]})`,
-        "GZIP Modified": mtime ? new Date(mtime * 1000).toLocaleString() : "Not set"
+        'GZIP Method': u8[2] === 8 ? 'Deflate' : `Unknown (${u8[2]})`,
+        'GZIP OS': osMap[u8[9]] || `Unknown (${u8[9]})`,
+        'GZIP Modified': mtime ? new Date(mtime * 1000).toLocaleString() : 'Not set'
     };
-    if (originalName) metadata["Original Name"] = originalName;
-    if (comment) metadata["Comment"] = comment;
+    if (originalName) metadata['Original Name'] = originalName;
+    if (comment) metadata['Comment'] = comment;
 
     let files = [];
     const looksLikeTar = () => {
-        const name = (originalName || file?.name || "").toLowerCase();
-        return name.endsWith(".tar.gz") || name.endsWith(".tgz") || originalName?.toLowerCase().endsWith(".tar") || ext === "tgz";
+        const name = (originalName || file?.name || '').toLowerCase();
+        return (
+            name.endsWith('.tar.gz') ||
+            name.endsWith('.tgz') ||
+            originalName?.toLowerCase().endsWith('.tar') ||
+            ext === 'tgz'
+        );
     };
 
     const shouldInspectTar = looksLikeTar();
@@ -113,8 +119,8 @@ function parseGzip(file, arrayBuffer, ext = "") {
             files = parseTarArchive(decompressed).files;
         } catch (e) {
             if (e instanceof ReferenceError) throw e;
-            console.error("GZIP decompress error", e);
-            metadata["GZIP Warning"] = "Failed to decompress payload";
+            console.error('GZIP decompress error', e);
+            metadata['GZIP Warning'] = 'Failed to decompress payload';
         }
     }
 
@@ -133,7 +139,8 @@ async function parseZipContents(file) {
             let eocdOffset = -1;
 
             for (let i = u8.length - 22; i >= Math.max(0, u8.length - maxComment); i--) {
-                if (view.getUint32(i, true) === 0x06054b50) { // End of central directory
+                if (view.getUint32(i, true) === 0x06054b50) {
+                    // End of central directory
                     eocdOffset = i;
                     break;
                 }
@@ -143,7 +150,7 @@ async function parseZipContents(file) {
             const totalEntries = view.getUint16(eocdOffset + 10, true);
             const centralOffset = view.getUint32(eocdOffset + 16, true);
             let offset = centralOffset;
-            const decoder = new TextDecoder("utf-8");
+            const decoder = new TextDecoder('utf-8');
             const files = [];
             let isEncrypted = null;
 
@@ -177,7 +184,7 @@ async function parseZipContents(file) {
             if (isEncrypted === null) isEncrypted = false;
             return { files, encrypted: isEncrypted };
         } catch (e) {
-            console.error("ZIP central directory parse failed", e);
+            console.error('ZIP central directory parse failed', e);
             return fallbackResult;
         }
     };
@@ -194,22 +201,25 @@ async function parseZipContents(file) {
         let isEncrypted = null;
         zip.forEach((relativePath, zipEntry) => {
             if (count > 200) return;
-            let crc = "N/A";
-            if (zipEntry._data && typeof zipEntry._data.crc32 === 'number') crc = (zipEntry._data.crc32 >>> 0).toString(16).toUpperCase().padStart(8, '0');
+            let crc = 'N/A';
+            if (zipEntry._data && typeof zipEntry._data.crc32 === 'number')
+                crc = (zipEntry._data.crc32 >>> 0).toString(16).toUpperCase().padStart(8, '0');
             if (zipEntry.encrypted === true) isEncrypted = true;
-            files.push({ name: relativePath, dir: zipEntry.dir, size: formatBytes(zipEntry._data.uncompressedSize), crc, encrypted: zipEntry.encrypted === true });
+            files.push({
+                name: relativePath,
+                dir: zipEntry.dir,
+                size: formatBytes(zipEntry._data.uncompressedSize),
+                crc,
+                encrypted: zipEntry.encrypted === true
+            });
             count++;
         });
         if (isEncrypted === null) isEncrypted = false;
         return { files, encrypted: isEncrypted };
     } catch (e) {
-        console.error("ZIP parse error", e);
+        console.error('ZIP parse error', e);
         return fallbackResult;
     }
 }
 
-export {
-    parseZipContents,
-    parseTarArchive,
-    parseGzip
-};
+export { parseZipContents, parseTarArchive, parseGzip };

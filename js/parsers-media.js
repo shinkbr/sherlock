@@ -1,8 +1,9 @@
-import exifr from 'exifr';
 const SECONDS_BETWEEN_1904_AND_1970 = 2082844800; // QuickTime epoch difference
 
 function readString(view, offset, length) {
-    return Array.from({ length }, (_, i) => String.fromCharCode(view.getUint8(offset + i))).join('');
+    return Array.from({ length }, (_, i) => String.fromCharCode(view.getUint8(offset + i))).join(
+        ''
+    );
 }
 
 function readBoxHeaders(view, start, end) {
@@ -34,13 +35,13 @@ function readBoxHeaders(view, start, end) {
 function findFirstBox(view, parent, target) {
     const contentStart = parent.start + (parent.headerSize || 0);
     const boxes = readBoxHeaders(view, contentStart, parent.end);
-    return boxes.find(b => b.type === target);
+    return boxes.find((b) => b.type === target);
 }
 
 function findChildBoxes(view, parent, target) {
     const contentStart = parent.start + (parent.headerSize || 0);
     const boxes = readBoxHeaders(view, contentStart, parent.end);
-    return boxes.filter(b => b.type === target);
+    return boxes.filter((b) => b.type === target);
 }
 
 function parseMvhd(view, box) {
@@ -50,12 +51,20 @@ function parseMvhd(view, box) {
         const durationOffset = version === 1 ? box.start + 32 : box.start + 24;
         const creationOffset = version === 1 ? box.start + 12 : box.start + 12;
         const timescale = view.getUint32(timescaleOffset);
-        const duration = version === 1 ? Number(view.getBigUint64(durationOffset)) : view.getUint32(durationOffset);
-        const creation = version === 1 ? Number(view.getBigUint64(creationOffset)) : view.getUint32(creationOffset);
+        const duration =
+            version === 1
+                ? Number(view.getBigUint64(durationOffset))
+                : view.getUint32(durationOffset);
+        const creation =
+            version === 1
+                ? Number(view.getBigUint64(creationOffset))
+                : view.getUint32(creationOffset);
         const seconds = timescale ? duration / timescale : 0;
         const createdAt = new Date((creation - SECONDS_BETWEEN_1904_AND_1970) * 1000);
         return { durationSeconds: seconds, createdAt };
-    } catch (e) { return {}; }
+    } catch {
+        return {};
+    }
 }
 
 function parseTkhd(view, box) {
@@ -66,14 +75,18 @@ function parseTkhd(view, box) {
         const width = view.getUint32(widthOffset) / 65536;
         const height = view.getUint32(heightOffset) / 65536;
         return { width, height };
-    } catch (e) { return {}; }
+    } catch {
+        return {};
+    }
 }
 
 function parseHdlr(view, box) {
     try {
         const handler = readString(view, box.start + 16, 4);
         return handler;
-    } catch (e) { return null; }
+    } catch {
+        return null;
+    }
 }
 
 function parseMdhd(view, box) {
@@ -82,10 +95,15 @@ function parseMdhd(view, box) {
         const timescaleOffset = version === 1 ? box.start + 28 : box.start + 20;
         const durationOffset = version === 1 ? box.start + 32 : box.start + 24;
         const timescale = view.getUint32(timescaleOffset);
-        const duration = version === 1 ? Number(view.getBigUint64(durationOffset)) : view.getUint32(durationOffset);
+        const duration =
+            version === 1
+                ? Number(view.getBigUint64(durationOffset))
+                : view.getUint32(durationOffset);
         const seconds = timescale ? duration / timescale : 0;
         return { timescale, duration: seconds };
-    } catch (e) { return {}; }
+    } catch {
+        return {};
+    }
 }
 
 function parseStsd(view, box) {
@@ -100,7 +118,9 @@ function parseStsd(view, box) {
             offset += size;
         }
         return entries;
-    } catch (e) { return []; }
+    } catch {
+        return [];
+    }
 }
 
 function parseColr(view, sampleEntry) {
@@ -126,12 +146,14 @@ function parseColr(view, sampleEntry) {
             if (size < 8) break;
             offset += size;
         }
-    } catch (e) { }
+    } catch {
+        /* ignore */
+    }
     return null;
 }
 
 function formatSeconds(sec) {
-    if (!sec || !isFinite(sec)) return "Unknown";
+    if (!sec || !isFinite(sec)) return 'Unknown';
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = Math.floor(sec % 60);
@@ -143,15 +165,16 @@ function parseMp4Metadata(buffer) {
     const view = new DataView(buffer);
     const root = { start: 0, end: buffer.byteLength, headerSize: 0 };
     const top = readBoxHeaders(view, root.start, root.end);
-    const moov = top.find(b => b.type === 'moov');
+    const moov = top.find((b) => b.type === 'moov');
     if (!moov) return {};
 
     const meta = {};
     const mvhd = findFirstBox(view, moov, 'mvhd');
     if (mvhd) {
         const mvhdData = parseMvhd(view, mvhd);
-        if (mvhdData.durationSeconds) meta["Duration"] = formatSeconds(mvhdData.durationSeconds);
-        if (mvhdData.createdAt && !isNaN(mvhdData.createdAt)) meta["Creation Time"] = mvhdData.createdAt.toLocaleString();
+        if (mvhdData.durationSeconds) meta['Duration'] = formatSeconds(mvhdData.durationSeconds);
+        if (mvhdData.createdAt && !isNaN(mvhdData.createdAt))
+            meta['Creation Time'] = mvhdData.createdAt.toLocaleString();
     }
 
     const udta = findFirstBox(view, moov, 'udta');
@@ -160,21 +183,22 @@ function parseMp4Metadata(buffer) {
         if (metaBox) {
             const rawText = readString(view, metaBox.start, Math.min(4096, metaBox.size));
             const encoderMatch = rawText.match(/©too.{0,4}([^\0]+)/);
-            if (encoderMatch && encoderMatch[1]) meta["Encoder"] = encoderMatch[1].trim();
+            if (encoderMatch && encoderMatch[1]) meta['Encoder'] = encoderMatch[1].trim();
             const creationMatch = rawText.match(/©day.{0,4}([^\0]+)/);
-            if (creationMatch && creationMatch[1] && !meta["Creation Time"]) meta["Creation Time"] = creationMatch[1].trim();
+            if (creationMatch && creationMatch[1] && !meta['Creation Time'])
+                meta['Creation Time'] = creationMatch[1].trim();
             const locInMeta = extractISO6709(rawText);
-            if (locInMeta && !meta["Location"]) meta["Location"] = locInMeta;
+            if (locInMeta && !meta['Location']) meta['Location'] = locInMeta;
         }
         const rawUdta = readString(view, udta.start, Math.min(4096, udta.size));
         const locMatch = rawUdta.match(/([+-]\d{2}\.\d+)[, ]([+-]\d{3}\.\d+)/);
-        if (locMatch) meta["Location"] = `${locMatch[1]}, ${locMatch[2]}`;
+        if (locMatch) meta['Location'] = `${locMatch[1]}, ${locMatch[2]}`;
     }
 
     const traks = findChildBoxes(view, moov, 'trak');
     const videoTracks = [];
     const audioTracks = [];
-    traks.forEach(trak => {
+    traks.forEach((trak) => {
         const tkhd = findFirstBox(view, trak, 'tkhd');
         const mdia = findFirstBox(view, trak, 'mdia');
         if (!mdia) return;
@@ -191,7 +215,7 @@ function parseMp4Metadata(buffer) {
                 const stsd = findFirstBox(view, stbl, 'stsd');
                 const entries = stsd ? parseStsd(view, stsd) : [];
                 if (entries.length) {
-                    codec = entries.map(e => e.type).join(', ');
+                    codec = entries.map((e) => e.type).join(', ');
                     if (handler === 'vide') {
                         const colrBox = parseColr(view, entries[0]);
                         if (colrBox) colr = colrBox;
@@ -202,33 +226,40 @@ function parseMp4Metadata(buffer) {
         const trackInfo = {};
         if (handler === 'vide') {
             const dims = tkhd ? parseTkhd(view, tkhd) : {};
-            trackInfo.type = "Video";
-            trackInfo.codec = codec || "Unknown";
-            if (dims.width && dims.height) trackInfo.resolution = `${Math.round(dims.width)}x${Math.round(dims.height)}`;
+            trackInfo.type = 'Video';
+            trackInfo.codec = codec || 'Unknown';
+            if (dims.width && dims.height)
+                trackInfo.resolution = `${Math.round(dims.width)}x${Math.round(dims.height)}`;
             if (mdhdInfo.duration) trackInfo.duration = formatSeconds(mdhdInfo.duration);
             if (colr) trackInfo.color = colr;
             videoTracks.push(trackInfo);
         } else if (handler === 'soun') {
-            trackInfo.type = "Audio";
-            trackInfo.codec = codec || "Unknown";
+            trackInfo.type = 'Audio';
+            trackInfo.codec = codec || 'Unknown';
             if (mdhdInfo.duration) trackInfo.duration = formatSeconds(mdhdInfo.duration);
             audioTracks.push(trackInfo);
         }
     });
 
-    if (videoTracks.length) meta["Video Tracks"] = videoTracks.map(v => {
-        const parts = [v.codec];
-        if (v.resolution) parts.push(v.resolution);
-        if (v.duration) parts.push(v.duration);
-        if (v.color) parts.push(`Color: ${v.color}`);
-        return parts.filter(Boolean).join(" | ");
-    }).join("\n");
+    if (videoTracks.length)
+        meta['Video Tracks'] = videoTracks
+            .map((v) => {
+                const parts = [v.codec];
+                if (v.resolution) parts.push(v.resolution);
+                if (v.duration) parts.push(v.duration);
+                if (v.color) parts.push(`Color: ${v.color}`);
+                return parts.filter(Boolean).join(' | ');
+            })
+            .join('\n');
 
-    if (audioTracks.length) meta["Audio Tracks"] = audioTracks.map(a => {
-        const parts = [a.codec];
-        if (a.duration) parts.push(a.duration);
-        return parts.filter(Boolean).join(" | ");
-    }).join("\n");
+    if (audioTracks.length)
+        meta['Audio Tracks'] = audioTracks
+            .map((a) => {
+                const parts = [a.codec];
+                if (a.duration) parts.push(a.duration);
+                return parts.filter(Boolean).join(' | ');
+            })
+            .join('\n');
 
     return meta;
 }
@@ -264,13 +295,15 @@ function extractTextHints(buffer) {
             encoder: encoderMatch ? encoderMatch[1].trim() : null,
             shotTime: dateMatch ? dateMatch[1] : null
         };
-    } catch (e) { return {}; }
+    } catch {
+        return {};
+    }
 }
 
 async function parseVideo(file, buffer, magicHex) {
     let meta = {};
     // Attempt structured MP4/MOV parsing
-    if (magicHex && magicHex.toUpperCase().includes("66747970")) {
+    if (magicHex && magicHex.toUpperCase().includes('66747970')) {
         const mp4Meta = parseMp4Metadata(buffer);
         meta = Object.assign(meta, mp4Meta);
     }
@@ -282,30 +315,35 @@ async function parseVideo(file, buffer, magicHex) {
         const domMeta = await new Promise((resolve) => {
             video.onloadedmetadata = () => {
                 resolve({
-                    "Duration": `${Math.floor(video.duration / 60)}m ${Math.floor(video.duration % 60)}s`,
-                    "Resolution": `${video.videoWidth}x${video.videoHeight}`
+                    Duration: `${Math.floor(video.duration / 60)}m ${Math.floor(video.duration % 60)}s`,
+                    Resolution: `${video.videoWidth}x${video.videoHeight}`
                 });
             };
             video.onerror = () => resolve({});
             video.src = URL.createObjectURL(file);
         });
         meta = Object.assign({}, domMeta, meta);
-    } catch (e) { }
+    } catch {
+        /* ignore */
+    }
 
     // Lightweight text search hints for formats not covered
     const hints = extractTextHints(buffer);
-    if (hints.location && !meta["Location"]) meta["Location"] = hints.location;
-    if (hints.encoder && !meta["Encoder"]) meta["Encoder"] = hints.encoder;
-    if (hints.shotTime && !meta["Creation Time"]) meta["Creation Time"] = hints.shotTime;
+    if (hints.location && !meta['Location']) meta['Location'] = hints.location;
+    if (hints.encoder && !meta['Encoder']) meta['Encoder'] = hints.encoder;
+    if (hints.shotTime && !meta['Creation Time']) meta['Creation Time'] = hints.shotTime;
 
     // Ensure we have a label for resolution if we parsed it in video tracks
-    if (!meta["Resolution"] && meta["Video Tracks"]) {
-        const firstRes = meta["Video Tracks"].split("\n").map(r => r.match(/(\d+x\d+)/)).find(Boolean);
-        if (firstRes && firstRes[1]) meta["Resolution"] = firstRes[1];
+    if (!meta['Resolution'] && meta['Video Tracks']) {
+        const firstRes = meta['Video Tracks']
+            .split('\n')
+            .map((r) => r.match(/(\d+x\d+)/))
+            .find(Boolean);
+        if (firstRes && firstRes[1]) meta['Resolution'] = firstRes[1];
     }
 
     let gps = null;
-    if (!gps && meta["Location"]) gps = parseLocationString(meta["Location"]);
+    if (!gps && meta['Location']) gps = parseLocationString(meta['Location']);
     if (!gps && hints.location) gps = parseLocationString(hints.location);
 
     return { metadata: meta, gps };

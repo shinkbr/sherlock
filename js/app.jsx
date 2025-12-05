@@ -44,34 +44,34 @@ import {
 } from './components.jsx';
 
 const TEXT_EXT_LABELS = {
-    txt: "Plain Text",
-    md: "Markdown",
-    markdown: "Markdown",
-    json: "JSON",
-    yaml: "YAML",
-    yml: "YAML",
-    xml: "XML",
-    html: "HTML",
-    htm: "HTML",
-    css: "CSS",
-    js: "JavaScript",
-    ts: "TypeScript",
-    c: "C Source",
-    h: "C Header",
-    cpp: "C++ Source",
-    hpp: "C++ Header",
-    go: "Go Source",
-    rs: "Rust Source",
-    py: "Python Source",
-    sh: "Shell Script",
-    bash: "Shell Script",
-    bat: "Batch Script",
-    ini: "INI Config",
-    cfg: "Config",
-    conf: "Config",
-    log: "Log File",
-    csv: "CSV",
-    tsv: "TSV"
+    txt: 'Plain Text',
+    md: 'Markdown',
+    markdown: 'Markdown',
+    json: 'JSON',
+    yaml: 'YAML',
+    yml: 'YAML',
+    xml: 'XML',
+    html: 'HTML',
+    htm: 'HTML',
+    css: 'CSS',
+    js: 'JavaScript',
+    ts: 'TypeScript',
+    c: 'C Source',
+    h: 'C Header',
+    cpp: 'C++ Source',
+    hpp: 'C++ Header',
+    go: 'Go Source',
+    rs: 'Rust Source',
+    py: 'Python Source',
+    sh: 'Shell Script',
+    bash: 'Shell Script',
+    bat: 'Batch Script',
+    ini: 'INI Config',
+    cfg: 'Config',
+    conf: 'Config',
+    log: 'Log File',
+    csv: 'CSV',
+    tsv: 'TSV'
 };
 
 const App = () => {
@@ -91,7 +91,7 @@ const App = () => {
             const hashes = await calculateHashes(arrayBuffer);
             const entropy = calculateEntropy(uint8Array);
             const magicHex = getMagicBytes(view, 16);
-            let detectedFormat = identifyFileType(view, magicHex) || "Unknown Binary";
+            let detectedFormat = identifyFileType(view, magicHex) || 'Unknown Binary';
             const hexDump = uint8Array.slice(0, 4096);
             const ext = (selectedFile.name.split('.').pop() || '').toLowerCase();
             const strings = extractStrings(uint8Array);
@@ -103,7 +103,7 @@ const App = () => {
             let sections = [];
             let gps = null;
 
-            if (magicHex.startsWith("4D5A")) {
+            if (magicHex.startsWith('4D5A')) {
                 const peData = parsePE(view);
                 metadata = peData.metadata;
                 if (peData.e_lfanew) {
@@ -111,77 +111,125 @@ const App = () => {
                     sections = parsePESections(view, peData.e_lfanew);
                     symbols = parsePESymbols(view, peData.e_lfanew);
                 }
-            } else if (magicHex.startsWith("7F454C46")) {
+            } else if (magicHex.startsWith('7F454C46')) {
                 metadata = parseELF(view);
                 sections = parseELFSections(view);
                 imports = parseELFImports(view);
                 symbols = parseELFSymbols(view);
-            } else if (["FEEDFACE", "CEFAEDFE", "FEEDFACF", "CFFAEDFE", "CAFEBABE"].some(m => magicHex.startsWith(m))) {
+            } else if (
+                ['FEEDFACE', 'CEFAEDFE', 'FEEDFACF', 'CFFAEDFE', 'CAFEBABE'].some((m) =>
+                    magicHex.startsWith(m)
+                )
+            ) {
                 const mach = parseMachO(view);
                 metadata = mach.metadata;
                 sections = mach.sections;
                 symbols = mach.symbols || [];
-            } else if (magicHex.startsWith('FFD8') || magicHex.startsWith('89504E47') || ['jpg', 'jpeg', 'png', 'heic', 'tiff'].includes(ext)) {
-                const ex = await exifr.parse(arrayBuffer, { tiff: true, xmp: true, icc: true, gps: true });
+            } else if (
+                magicHex.startsWith('FFD8') ||
+                magicHex.startsWith('89504E47') ||
+                ['jpg', 'jpeg', 'png', 'heic', 'tiff'].includes(ext)
+            ) {
+                const ex = await exifr.parse(arrayBuffer, {
+                    tiff: true,
+                    xmp: true,
+                    icc: true,
+                    gps: true
+                });
                 if (ex) {
                     for (const [k, v] of Object.entries(ex)) {
-                        if (v instanceof Uint8Array || (typeof v === 'object' && !(v instanceof Date))) continue;
+                        if (
+                            v instanceof Uint8Array ||
+                            (typeof v === 'object' && !(v instanceof Date))
+                        )
+                            continue;
                         metadata[k] = v instanceof Date ? v.toLocaleString() : v;
                     }
                     if (ex.latitude && ex.longitude) gps = { lat: ex.latitude, lon: ex.longitude };
                 }
-            } else if (magicHex.startsWith("504B0304")) {
+            } else if (magicHex.startsWith('504B0304')) {
                 const zipInfo = await parseZipContents(selectedFile);
                 archiveContents = zipInfo.files || [];
                 const zipEncrypted = zipInfo.encrypted;
 
-                const lowerEntries = archiveContents.map(f => f.name?.toLowerCase() || "");
-                const looksDocx = lowerEntries.some(n => n.startsWith("word/") || n.includes("word/document.xml"));
-                const looksXlsx = lowerEntries.some(n => n.startsWith("xl/") || n.includes("xl/workbook"));
-                const looksPptx = lowerEntries.some(n => n.startsWith("ppt/") || n.includes("ppt/presentation"));
-                const hasVba = lowerEntries.some(n => n.includes("vbaproject.bin"));
+                const lowerEntries = archiveContents.map((f) => f.name?.toLowerCase() || '');
+                const looksDocx = lowerEntries.some(
+                    (n) => n.startsWith('word/') || n.includes('word/document.xml')
+                );
+                const looksXlsx = lowerEntries.some(
+                    (n) => n.startsWith('xl/') || n.includes('xl/workbook')
+                );
+                const looksPptx = lowerEntries.some(
+                    (n) => n.startsWith('ppt/') || n.includes('ppt/presentation')
+                );
+                const hasVba = lowerEntries.some((n) => n.includes('vbaproject.bin'));
 
-                const isOfficeZip = looksDocx || looksXlsx || looksPptx || ['docx', 'xlsx', 'pptx', 'docm', 'xlsm', 'pptm'].includes(ext);
+                const isOfficeZip =
+                    looksDocx ||
+                    looksXlsx ||
+                    looksPptx ||
+                    ['docx', 'xlsx', 'pptx', 'docm', 'xlsm', 'pptm'].includes(ext);
                 if (isOfficeZip) {
                     const officeMeta = await parseOfficeXML(selectedFile);
                     metadata = officeMeta;
                     if (hasVba) {
-                        metadata["⚠️ MACROS DETECTED"] = metadata["⚠️ MACROS DETECTED"] || "YES (vbaProject.bin found)";
+                        metadata['⚠️ MACROS DETECTED'] =
+                            metadata['⚠️ MACROS DETECTED'] || 'YES (vbaProject.bin found)';
                     }
-                    if (looksDocx || ext.startsWith("doc")) detectedFormat = hasVba ? "Office Word (DOCM)" : "Office Word (DOCX)";
-                    else if (looksXlsx || ext.startsWith("xls")) detectedFormat = hasVba ? "Office Excel (XLSM)" : "Office Excel (XLSX)";
-                    else if (looksPptx || ext.startsWith("ppt")) detectedFormat = hasVba ? "Office PowerPoint (PPTM)" : "Office PowerPoint (PPTX)";
-                    else detectedFormat = "Office OpenXML";
+                    if (looksDocx || ext.startsWith('doc'))
+                        detectedFormat = hasVba ? 'Office Word (DOCM)' : 'Office Word (DOCX)';
+                    else if (looksXlsx || ext.startsWith('xls'))
+                        detectedFormat = hasVba ? 'Office Excel (XLSM)' : 'Office Excel (XLSX)';
+                    else if (looksPptx || ext.startsWith('ppt'))
+                        detectedFormat = hasVba
+                            ? 'Office PowerPoint (PPTM)'
+                            : 'Office PowerPoint (PPTX)';
+                    else detectedFormat = 'Office OpenXML';
                 } else {
-                    detectedFormat = "ZIP Archive";
+                    detectedFormat = 'ZIP Archive';
                 }
 
                 if (zipEncrypted !== null) {
                     metadata = metadata || {};
-                    metadata["ZIP Encryption"] = zipEncrypted ? "Encrypted entries detected" : "Not encrypted";
+                    metadata['ZIP Encryption'] = zipEncrypted
+                        ? 'Encrypted entries detected'
+                        : 'Not encrypted';
                 }
-            } else if (magicHex.startsWith("1F8B") || ['gz', 'tgz'].includes(ext)) {
+            } else if (magicHex.startsWith('1F8B') || ['gz', 'tgz'].includes(ext)) {
                 const gzipInfo = parseGzip(selectedFile, arrayBuffer, ext);
                 metadata = Object.assign(metadata || {}, gzipInfo.metadata || {});
                 if (gzipInfo.files?.length) archiveContents = gzipInfo.files;
-                detectedFormat = gzipInfo.files?.length ? "TAR.GZ Archive" : "GZIP Archive";
+                detectedFormat = gzipInfo.files?.length ? 'TAR.GZ Archive' : 'GZIP Archive';
             } else {
                 const tarMagic = getMagicBytes(view, 6, 257);
-                const seemsTar = tarMagic.toLowerCase().startsWith("7573746172") || ext === 'tar';
+                const seemsTar = tarMagic.toLowerCase().startsWith('7573746172') || ext === 'tar';
                 if (seemsTar) {
                     archiveContents = parseTarArchive(arrayBuffer).files;
-                    detectedFormat = "TAR Archive";
-                } else if (detectedFormat.includes("ISO") || ['mp4', 'mkv', 'avi', 'mov'].includes(ext) || magicHex.startsWith("1A45")) {
-                    const videoMeta = await parseVideo(selectedFile, arrayBuffer, magicHex, detectedFormat);
+                    detectedFormat = 'TAR Archive';
+                } else if (
+                    detectedFormat.includes('ISO') ||
+                    ['mp4', 'mkv', 'avi', 'mov'].includes(ext) ||
+                    magicHex.startsWith('1A45')
+                ) {
+                    const videoMeta = await parseVideo(
+                        selectedFile,
+                        arrayBuffer,
+                        magicHex,
+                        detectedFormat
+                    );
                     metadata = videoMeta.metadata || {};
                     if (videoMeta.gps) gps = videoMeta.gps;
-                } else if (magicHex.startsWith("25504446")) {
+                } else if (magicHex.startsWith('25504446')) {
                     metadata = await parsePDF(arrayBuffer);
                 }
             }
 
-            if ((!detectedFormat || detectedFormat === "Unknown Binary") && isLikelyText(uint8Array)) {
-                detectedFormat = TEXT_EXT_LABELS[ext] || (ext ? `${ext.toUpperCase()} Text` : "Plain Text");
+            if (
+                (!detectedFormat || detectedFormat === 'Unknown Binary') &&
+                isLikelyText(uint8Array)
+            ) {
+                detectedFormat =
+                    TEXT_EXT_LABELS[ext] || (ext ? `${ext.toUpperCase()} Text` : 'Plain Text');
             }
 
             setResults({
@@ -203,10 +251,9 @@ const App = () => {
                 archiveContents,
                 gps
             });
-
         } catch (err) {
             console.error(err);
-            alert("Error parsing file: " + err.message);
+            alert('Error parsing file: ' + err.message);
         } finally {
             setIsAnalyzing(false);
         }
@@ -229,7 +276,7 @@ const App = () => {
             URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
-            alert("Error preparing strings download: " + err.message);
+            alert('Error preparing strings download: ' + err.message);
         }
     }, [results]);
 
@@ -238,16 +285,17 @@ const App = () => {
         try {
             const buffer = await readFileAsArrayBuffer(results.file);
             const u8 = new Uint8Array(buffer);
-            let output = "";
+            let output = '';
             for (let i = 0; i < Math.ceil(u8.length / 16); i++) {
                 const offset = (i * 16).toString(16).padStart(8, '0').toUpperCase();
-                let hex = '', ascii = '';
+                let hex = '',
+                    ascii = '';
                 for (let j = 0; j < 16; j++) {
                     const idx = i * 16 + j;
                     if (idx < u8.length) {
                         const byte = u8[idx];
                         hex += byte.toString(16).padStart(2, '0').toUpperCase() + ' ';
-                        ascii += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+                        ascii += byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.';
                     } else {
                         hex += '   ';
                         ascii += ' ';
@@ -267,14 +315,13 @@ const App = () => {
             URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
-            alert("Error preparing hex download: " + err.message);
+            alert('Error preparing hex download: ' + err.message);
         }
     }, [results]);
 
-    const hasMetadata = results && (
-        (results.metadata && Object.keys(results.metadata).length > 0) ||
-        !!results.gps
-    );
+    const hasMetadata =
+        results &&
+        ((results.metadata && Object.keys(results.metadata).length > 0) || !!results.gps);
 
     return (
         <React.Fragment>
@@ -288,7 +335,11 @@ const App = () => {
 
                         <div className="space-y-6">
                             {hasMetadata && (
-                                <MetadataSection title="Extracted Metadata" data={results.metadata} icon="FileText">
+                                <MetadataSection
+                                    title="Extracted Metadata"
+                                    data={results.metadata}
+                                    icon="FileText"
+                                >
                                     <MapViewer gps={results.gps} />
                                 </MetadataSection>
                             )}
@@ -297,8 +348,16 @@ const App = () => {
                             <SymbolsSection symbols={results.symbols} />
                             <ImportsSection imports={results.imports} />
                             <ArchiveSection files={results.archiveContents} />
-                            <StringsSection strings={results.strings} fileName={results.name} onDownloadAll={handleDownloadStrings} />
-                            <HexSection data={results.hexDump} totalSize={results.rawSize} onDownloadAll={handleDownloadHex} />
+                            <StringsSection
+                                strings={results.strings}
+                                fileName={results.name}
+                                onDownloadAll={handleDownloadStrings}
+                            />
+                            <HexSection
+                                data={results.hexDump}
+                                totalSize={results.rawSize}
+                                onDownloadAll={handleDownloadHex}
+                            />
                         </div>
                     </div>
                 )}

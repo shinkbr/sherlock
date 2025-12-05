@@ -4,14 +4,14 @@ import { parseVideo } from '../js/parsers-media.js';
 const encoder = new TextEncoder();
 
 function typeToBytes(type) {
-    return type.split('').map(c => c.charCodeAt(0));
+    return type.split('').map((c) => c.charCodeAt(0));
 }
 
 function makeBox(type, payload) {
     const box = new Uint8Array(8 + payload.length);
     const view = new DataView(box.buffer);
     view.setUint32(0, box.length);
-    typeToBytes(type).forEach((b, i) => box[4 + i] = b);
+    typeToBytes(type).forEach((b, i) => (box[4 + i] = b));
     box.set(payload, 8);
     return box;
 }
@@ -58,7 +58,7 @@ function makeMdhdBox(timescale, durationSeconds) {
 
 function makeHdlrBox(handler) {
     const payload = new Uint8Array(32);
-    typeToBytes(handler).forEach((b, i) => payload[8 + i] = b);
+    typeToBytes(handler).forEach((b, i) => (payload[8 + i] = b));
     return makeBox('hdlr', payload);
 }
 
@@ -66,7 +66,7 @@ function makeStsdBox(codec) {
     const entry = new Uint8Array(16);
     const entryView = new DataView(entry.buffer);
     entryView.setUint32(0, entry.length, false);
-    typeToBytes(codec).forEach((b, i) => entry[4 + i] = b);
+    typeToBytes(codec).forEach((b, i) => (entry[4 + i] = b));
 
     const payload = new Uint8Array(8 + entry.length);
     const view = new DataView(payload.buffer);
@@ -105,11 +105,22 @@ describe('parsers-media parseVideo', () => {
         const videoStub = {
             preload: '',
             src: '',
-            set onloadedmetadata(fn) { this._onload = fn; fn(); },
-            set onerror(fn) { this._onerror = fn; },
-            get duration() { return 7; },
-            get videoWidth() { return 1920; },
-            get videoHeight() { return 1080; }
+            set onloadedmetadata(fn) {
+                this._onload = fn;
+                fn();
+            },
+            set onerror(fn) {
+                this._onerror = fn;
+            },
+            get duration() {
+                return 7;
+            },
+            get videoWidth() {
+                return 1920;
+            },
+            get videoHeight() {
+                return 1080;
+            }
         };
         vi.spyOn(document, 'createElement').mockReturnValue(videoStub);
 
