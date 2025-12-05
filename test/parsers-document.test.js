@@ -1,5 +1,19 @@
+import { describe, it, expect, vi } from 'vitest';
 import JSZip from 'jszip';
 import { formatPDFDate, parseOfficeXML, parsePDF } from '../js/parsers-document.js';
+
+vi.mock('exifr', () => ({
+    default: {
+        parse: vi.fn().mockResolvedValue({
+            Make: 'CameraMaker',
+            Model: 'CameraModel',
+            DateTimeOriginal: '2024:01:01 12:00:00',
+            GPSLatitude: 35.6895,
+            GPSLongitude: 139.6917
+        })
+    }
+}));
+
 
 describe('parsers-document', () => {
     it('formats PDF date strings into locale output', () => {
@@ -63,16 +77,6 @@ describe('parsers-document', () => {
         window.JSZip = JSZip;
         const zip = new JSZip();
         zip.file('word/media/image1.jpg', new Uint8Array([0xFF, 0xD8, 0xFF])); // Pseudo JPEG
-
-        // Mock exifr.parse behavior
-        const exifr = await import('exifr');
-        exifr.default.parse = async () => ({
-            Make: 'CameraMaker',
-            Model: 'CameraModel',
-            DateTimeOriginal: '2024:01:01 12:00:00',
-            GPSLatitude: 35.6895,
-            GPSLongitude: 139.6917
-        });
 
         const blob = await zip.generateAsync({ type: 'uint8array' });
         const props = await parseOfficeXML(new Blob([blob]));
