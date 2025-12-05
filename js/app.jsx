@@ -41,7 +41,7 @@ import {
     HexSection,
     StringsSection,
     MapViewer
-} from './components.js';
+} from './components.jsx';
 
 const TEXT_EXT_LABELS = {
     txt: "Plain Text",

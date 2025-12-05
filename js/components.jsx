@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icons } from './icons.js';
+import { Icons } from './icons.jsx';
 
 // const { Icons } = window; // Removed for module usage
 
