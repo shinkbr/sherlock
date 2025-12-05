@@ -85,6 +85,6 @@ describe('parsers-document', () => {
         expect(props['Embedded EXIF']).toContain('image1.jpg');
         expect(props['Embedded EXIF']).toContain('CameraMaker');
         expect(props['Embedded EXIF']).toContain('CameraModel');
-        expect(props['Embedded EXIF']).toContain('Lat, Long: 35.6895, 139.6917'); // Approximate format check
+        expect(props['Embedded EXIF']).toContain('GPS: 35.6895, 139.6917'); // Approximate format check
     });
 });
