@@ -16,6 +16,6 @@ const Icons = {
     )
 };
 
-// window.Icons = Icons;
+
 
 export { Icons };

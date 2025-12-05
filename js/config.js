@@ -24,4 +24,4 @@ export const FILE_SIGNATURES = [
     { sig: "2321", type: "Script (Shebang)" }
 ];
 
-// window.FILE_SIGNATURES = FILE_SIGNATURES; // Removed for module usage
+
