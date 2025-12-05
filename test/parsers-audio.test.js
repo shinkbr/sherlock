@@ -40,10 +40,10 @@ describe('Audio Parser', () => {
         const view = new DataView(buffer);
 
         // Chunk 1 at 12: "JUNK", size 20
-        view.setUint8(12, 0x4A); // J
+        view.setUint8(12, 0x4a); // J
         view.setUint8(13, 0x55); // U
-        view.setUint8(14, 0x4E); // N
-        view.setUint8(15, 0x4B); // K
+        view.setUint8(14, 0x4e); // N
+        view.setUint8(15, 0x4b); // K
         view.setUint32(16, 20, true);
 
         // Chunk 2 at 40: "fmt ", size 16
@@ -106,7 +106,7 @@ describe('Audio Parser', () => {
         list.set([0x49, 0x44, 0x33], 0); // ID3
         view.setUint8(3, 3); // Version 2.3
 
-        // Size: 4 bytes synch-safe. 
+        // Size: 4 bytes synch-safe.
         // 0x00 0x00 0x02 0x01 => 128 + 1 ??? No wait
         // 0000000 0000000 0000010 0000001
         // (0<<21) | (0<<14) | (2<<7) | 1 = 256 + 1 = 257 bytes
@@ -151,12 +151,12 @@ describe('Audio Parser', () => {
         // b12 -> 4 (SR low nibble) | 1 (Ch=2) | 0 (BPS high)
         // 0100 001 0 = 0x42
 
-        view.setUint8(18, 0x0A);
-        view.setUint8(19, 0xC4);
+        view.setUint8(18, 0x0a);
+        view.setUint8(19, 0xc4);
         view.setUint8(20, 0x42);
 
         // b13: BPS-low=1111(->16) = 0xF0
-        view.setUint8(21, 0xF0);
+        view.setUint8(21, 0xf0);
 
         // Total Samples = 88200 (2s)
         view.setUint32(22, 88200, false);
@@ -177,7 +177,7 @@ describe('Audio Parser', () => {
         u8.set([0x4f, 0x67, 0x67, 0x53], 0);
 
         // Codec string
-        const codecStr = "vorbis";
+        const codecStr = 'vorbis';
         for (let i = 0; i < codecStr.length; i++) {
             u8[50 + i] = codecStr.charCodeAt(i);
         }
@@ -213,7 +213,7 @@ describe('Audio Parser', () => {
         view.setUint32(15, 1, true); // 1 comment
 
         // Comment 0 Length (4 bytes LE) at 19
-        const commentStr = "TITLE=Hello";
+        const commentStr = 'TITLE=Hello';
         view.setUint32(19, commentStr.length, true);
 
         // Comment string at 23
@@ -233,9 +233,9 @@ describe('Audio Parser', () => {
         // Malformed block header causing huge length
         const view = new DataView(buffer);
         view.setUint8(4, 0x00);
-        view.setUint8(5, 0xFF);
-        view.setUint8(6, 0xFF);
-        view.setUint8(7, 0xFF);
+        view.setUint8(5, 0xff);
+        view.setUint8(6, 0xff);
+        view.setUint8(7, 0xff);
 
         const res = parseAudio({}, buffer, 'FLAC Audio');
         expect(res).toEqual({});
@@ -247,13 +247,13 @@ describe('Audio Parser', () => {
         u8.set([0x4f, 0x67, 0x67, 0x53], 0); // OggS
 
         // Theora
-        const codecStr = "theora";
+        const codecStr = 'theora';
         for (let i = 0; i < codecStr.length; i++) u8[50 + i] = codecStr.charCodeAt(i);
         let res = parseAudio({}, buffer, 'OGG Audio');
         expect(res.Codec).toBe('Theora');
 
         // Opus
-        const codecStr2 = "opus";
+        const codecStr2 = 'opus';
         for (let i = 0; i < codecStr2.length; i++) u8[50 + i] = codecStr2.charCodeAt(i);
         res = parseAudio({}, buffer, 'OGG Audio');
         expect(res.Codec).toBe('Opus');

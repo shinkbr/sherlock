@@ -131,4 +131,80 @@ describe('parsers-media parseVideo', () => {
         expect(result.metadata['Resolution']).toBe('1920x1080');
         expect(result.gps).toMatchObject({ lat: 37.1234, lon: -122.5678 });
     });
+
+    it('parses MP4 V1 boxes (64-bit) and colr box', async () => {
+        // Construct V1 mvhd
+        // version 1: 1 byte
+        // creation time: 8 bytes (offset 4+8=12)
+        // mod time: 8 bytes
+        // timescale: 4 bytes (offset 4+8+8 = 20 + 8 = 28)
+        // duration: 8 bytes (offset 32)
+
+        const mvhdV1 = new Uint8Array(120); // enough size
+        const v = new DataView(mvhdV1.buffer);
+        v.setUint32(0, mvhdV1.length);
+        v.setUint8(4, 0x6d);
+        v.setUint8(5, 0x76);
+        v.setUint8(6, 0x68);
+        v.setUint8(7, 0x64); // mvhd
+        v.setUint8(8, 1); // version 1
+        v.setBigUint64(12 + 8, 2082844800n + 5000n, false); // creation (at offset 12 in box? no, header is 8, ver is 1 (off 8).
+        // parseMvhd: version = view.getUint8(box.start + 8);
+        // creationOffset = ver==1 ? box.start+12 (Wait? Line 52: const creationOffset = version === 1 ? box.start + 12 : box.start + 12;)
+        // Both are +12?
+        // Line 52 in parsers-media.js says: `const creationOffset = version === 1 ? box.start + 12 : box.start + 12;`
+        // 64-bit creation time is usually at offset 12 (after version+flags).
+        // 32-bit creation time is also at offset 12.
+        // But 64-bit is 8 bytes. 32-bit is 4 bytes.
+        // So modification time offset is different.
+        // timescaleOffset = ver==1 ? start+28 : start+20.
+        // durationOffset = ver==1 ? start+32 : start+24.
+
+        v.setBigUint64(12, BigInt(2082844800 + 5000), false); // Creation time (using 64-bit space, but value small)
+        v.setUint32(28, 1000, false); // timescale
+        v.setBigUint64(32, 5000n, false); // duration
+
+        // Wrap in moov
+        const moov = makeBox('moov', mvhdV1);
+        const buffer = concatBoxes(makeBox('ftyp', new Uint8Array(4)), moov).buffer;
+
+        const res = await parseVideo({}, buffer, '66747970');
+        expect(res.metadata['Duration']).toBe('0m 5s'); // 5000 / 1000
+    });
+
+    it('extracts metadata from raw text hints', async () => {
+        // Regex requires 3 digits for longitude: [+-]\d{3}\.\d+
+        // Regex separator is [, ] (one char). So we use space only.
+        const text =
+            'Some header data... \nlocation: +40.7128 -074.0060\nencoder: Lavf58.29.100\n2024-01-01 12:00:00 shoot time';
+        const buffer = encoder.encode(text).buffer;
+
+        // Mock video fail to force text hint usage
+        const videoStub = {
+            set onloadedmetadata(fn) {},
+            set onerror(fn) {
+                fn();
+            },
+            src: ''
+        };
+        vi.spyOn(document, 'createElement').mockReturnValue(videoStub);
+
+        const res = await parseVideo({}, buffer, '');
+        // We look for substring match because extractTextHints returns just the coordinates
+        expect(res.metadata['Location']).toContain('40.7128, -074.0060');
+        expect(res.metadata['Encoder']).toBe('Lavf58.29.100');
+        expect(res.metadata['Creation Time']).toContain('2024-01-01');
+    });
+
+    it('handles malformed boxes gracefully', async () => {
+        const buffer = new ArrayBuffer(20);
+        // Only ftyp
+        const view = new DataView(buffer);
+        view.setUint32(0, 8, false);
+        view.setUint8(4, 0x66); // ftyp
+
+        // Truncated afterwards
+        const res = await parseVideo({}, buffer, '66747970');
+        expect(res.metadata).toEqual({}); // No moov found
+    });
 });

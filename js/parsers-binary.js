@@ -423,6 +423,7 @@ function parsePEImports(view, e_lfanew) {
 
 function parseELF(view) {
     try {
+        if (view.getUint32(0, false) !== 0x7f454c46) return false;
         const is64 = view.getUint8(4) === 2;
         const isLE = view.getUint8(5) === 1;
         const machine = view.getUint16(18, isLE);
@@ -1141,17 +1142,22 @@ function parseMachO(view) {
     }
 
     let isLittle = false;
-    let magic = magicBE;
+    let magic = 0;
+
     if (magicBE === MAGIC.MH_MAGIC || magicBE === MAGIC.MH_MAGIC_64) {
         isLittle = false;
+        magic = magicBE;
     } else if (magicBE === MAGIC.MH_CIGAM || magicBE === MAGIC.MH_CIGAM_64) {
         isLittle = true;
+        magic = magicBE;
     } else if (magicLE === MAGIC.MH_MAGIC || magicLE === MAGIC.MH_MAGIC_64) {
         isLittle = true;
         magic = magicLE;
     } else if (magicLE === MAGIC.MH_CIGAM || magicLE === MAGIC.MH_CIGAM_64) {
         isLittle = false;
         magic = magicLE;
+    } else {
+        return { metadata: {} };
     }
 
     return parseSingleMachO(0, isLittle, magic);

@@ -240,4 +240,84 @@ describe('parsers-binary', () => {
         expect(sections.some((s) => s.name === '__text')).toBe(true);
         expect(symbols.some((s) => s.name === '_main')).toBe(true);
     });
+
+    it('handles Malformed PE', () => {
+        const buffer = new ArrayBuffer(100);
+        const view = new DataView(buffer);
+        // Missing signature
+        const res = parsePE(view);
+        expect(res.metadata).toEqual({});
+
+        // Malformed Sections
+        const sections = parsePESections(view, 0x10);
+        expect(sections).toEqual([]);
+
+        // Malformed Imports
+        const imports = parsePEImports(view, 0x10);
+        expect(imports).toEqual({});
+
+        // Malformed Symbols
+        const symbols = parsePESymbols(view, 0x10);
+        expect(symbols).toEqual([]);
+    });
+
+    it('handles Malformed ELF', () => {
+        const buffer = new ArrayBuffer(100);
+        const view = new DataView(buffer);
+        expect(parseELF(view)).toBe(false);
+        expect(parseELFSections(view)).toEqual([]);
+        expect(parseELFSymbols(view)).toEqual([]);
+        expect(parseELFImports(view)).toEqual({});
+    });
+
+    it('handles Malformed Mach-O', () => {
+        const buffer = new ArrayBuffer(100);
+        const view = new DataView(buffer);
+        const res = parseMachO(view);
+        expect(res.metadata).toEqual({});
+    });
+
+    it('parses PE with COFF Symbol Table (Fallback)', () => {
+        const buffer = new ArrayBuffer(1024);
+        const view = new DataView(buffer);
+        const e_lfanew = 0x40;
+        view.setUint32(0x3c, e_lfanew, true);
+        view.setUint32(e_lfanew, 0x4550, true); // PE
+
+        // COFF Header
+        // PointerToSymbolTable at offset 8
+        view.setUint32(e_lfanew + 8, 0x100, true);
+        // NumberOfSymbols at offset 12
+        view.setUint32(e_lfanew + 12, 1, true);
+
+        // Symbol Table at 0x100
+        // Symbol Entry (18 bytes)
+        // Name: "MySym" (Short name <= 8 chars)
+        setString(view, 0x100, 'MySym');
+        view.setUint32(0x100 + 8, 0x1000, true); // Value
+        view.setUint16(0x100 + 14, 0, true); // Type (0 = NULL)
+        view.setUint8(0x100 + 16, 2); // StorageClass 2 (External)
+        view.setUint8(0x100 + 17, 0); // AuxSymbols 0
+
+        const symbols = parsePESymbols(view, e_lfanew);
+        expect(symbols).toContainEqual({
+            name: 'MySym',
+            type: 'COFF/EXTERNAL',
+            address: '0x1000',
+            size: 0
+        });
+    });
+
+    it('parses 32-bit ELF', () => {
+        const buffer = new ArrayBuffer(0x400);
+        const view = new DataView(buffer);
+        view.setUint32(0, 0x7f454c46, false); // Magic
+        view.setUint8(4, 1); // 1 = 32-bit
+        view.setUint8(5, 1); // Little Endian
+        view.setUint16(18, 0x03, true); // x86
+
+        const res = parseELF(view);
+        expect(res.Class).toBe('32-bit');
+        expect(res.Arch).toBe('x86');
+    });
 });

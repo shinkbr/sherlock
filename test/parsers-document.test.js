@@ -14,6 +14,16 @@ vi.mock('exifr', () => ({
     }
 }));
 
+// Mock pdfjs-dist
+const mockGetDocument = vi.fn();
+vi.mock('pdfjs-dist', () => ({
+    GlobalWorkerOptions: { workerSrc: '' },
+    getDocument: (...args) => mockGetDocument(...args)
+}));
+
+// Mock worker import
+vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({ default: 'mock-worker-url' }));
+
 describe('parsers-document', () => {
     it('formats PDF date strings into locale output', () => {
         const formatted = formatPDFDate('D:20240101123000Z');
@@ -98,5 +108,57 @@ describe('parsers-document', () => {
         expect(props['Embedded EXIF']).toContain('CameraMaker');
         expect(props['Embedded EXIF']).toContain('CameraModel');
         expect(props['Embedded EXIF']).toContain('GPS: 35.6895, 139.6917'); // Approximate format check
+    });
+
+    it('detects Macros in Office files', async () => {
+        window.JSZip = JSZip;
+        const zip = new JSZip();
+        zip.file('word/vbaProject.bin', 'macro content');
+
+        const blob = await zip.generateAsync({ type: 'uint8array' });
+        const props = await parseOfficeXML(new Blob([blob]));
+
+        expect(props['⚠️ MACROS DETECTED']).toContain('YES (vbaProject.bin found)');
+    });
+
+    it('handles Full PDF parsing with mocked pdf.js', async () => {
+        const mockDoc = {
+            getMetadata: vi.fn().mockResolvedValue({
+                info: {
+                    Title: 'Mock Title',
+                    Author: 'Mock Author',
+                    CreationDate: 'D:20240101120000Z',
+                    Keywords: ['Test', 'PDF']
+                }
+            }),
+            numPages: 1,
+            getPage: vi.fn().mockResolvedValue({
+                getAnnotations: vi
+                    .fn()
+                    .mockResolvedValue([
+                        { contents: 'Annotation content' },
+                        { contents: 'Duplicate' },
+                        { contents: 'Duplicate' }
+                    ])
+            }),
+            cleanup: vi.fn(),
+            isEncrypted: false
+        };
+
+        // mocked getDocument returns an object with a promise
+        mockGetDocument.mockReturnValue({ promise: Promise.resolve(mockDoc) });
+
+        const buffer = new ArrayBuffer(100);
+        // We need to make sure we don't trigger the "header bytes" check that looks for %PDF in simple parsing?
+        // Code: `const headerText = ...; setIfValue('PDF Version'...)`
+        // Then `try { const loadingTask = pdfjsLib.getDocument(...) }`
+        // So it calls getDocument.
+
+        const res = await parsePDF(buffer);
+
+        expect(res.Title).toBe('Mock Title');
+        expect(res['Comments/Annotations']).toContain('1 found');
+        expect(res['Annotation Comments']).toContain('p1: Annotation content');
+        expect(mockGetDocument).toHaveBeenCalled();
     });
 });

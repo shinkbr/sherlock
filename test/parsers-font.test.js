@@ -137,7 +137,7 @@ describe('Font Parser', () => {
         view.setUint16(recOffset + 10, 0, false);
 
         const strOffset = 50;
-        const str = "Arial";
+        const str = 'Arial';
         for (let i = 0; i < str.length; i++) {
             view.setUint16(strOffset + i * 2, str.charCodeAt(i), false);
         }
@@ -191,22 +191,6 @@ describe('Font Parser', () => {
         view.setUint16(nameOffset + 4, storageStart, false);
 
         // Helper to write record
-        let recIdx = 0;
-        const addRecord = (nid, strVal) => {
-            const rBase = nameOffset + 6 + recIdx * 12;
-            view.setUint16(rBase, 1, false); // Platform Mac
-            view.setUint16(rBase + 2, 0, false); // Encoding Roman
-            view.setUint16(rBase + 4, 0, false); // Language
-            view.setUint16(rBase + 6, nid, false); // NameID
-            view.setUint16(rBase + 8, strVal.length, false);
-
-            // Write string at some offset? Simple sequential
-            // Let's just put valid offsets.
-            // But we need to write the string bytes too.
-            // Let's assume sequential storage from 0.
-            const currentStrOffset = u8.length - (500 - (nameOffset + storageStart)); // hacky
-            // Actually, we can use a growing offset pointer.
-        };
 
         // Simpler approach: Manual records
         // Record 0: NameID 1 (Family) = "MacFamily"
@@ -216,11 +200,11 @@ describe('Font Parser', () => {
         // Record 4: NameID 0 (Copyright) = "(c) Me"
 
         const records = [
-            { id: 1, val: "MacFamily" },
-            { id: 2, val: "Regular" },
-            { id: 4, val: "MacFamily Regular" },
-            { id: 5, val: "1.0" },
-            { id: 0, val: "Copyright Me" }
+            { id: 1, val: 'MacFamily' },
+            { id: 2, val: 'Regular' },
+            { id: 4, val: 'MacFamily Regular' },
+            { id: 5, val: '1.0' },
+            { id: 0, val: 'Copyright Me' }
         ];
 
         let currentStringOffset = 0;
@@ -252,7 +236,10 @@ describe('Font Parser', () => {
         const buffer = new ArrayBuffer(44);
         const view = new DataView(buffer);
         // wOFF
-        view.setUint8(0, 0x77); view.setUint8(1, 0x4f); view.setUint8(2, 0x46); view.setUint8(3, 0x46);
+        view.setUint8(0, 0x77);
+        view.setUint8(1, 0x4f);
+        view.setUint8(2, 0x46);
+        view.setUint8(3, 0x46);
         // Flavor NOT OTTO -> TrueType (e.g. 0x00010000)
         view.setUint32(4, 0x00010000, false);
 
