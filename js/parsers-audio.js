@@ -42,7 +42,6 @@ function parseID3v2(view) {
     if (sig !== 'ID3') return null;
 
     const version = view.getUint8(3);
-    const flags = view.getUint8(5);
     // Synch-safe integer for size
     const size =
         (view.getUint8(6) << 21) |
@@ -69,7 +68,6 @@ function parseWAV(view) {
         // fmt chunk usually starts at 12
         let offset = 12;
         let fmtParsed = false;
-        let dataParsed = false;
         const meta = {};
 
         while (offset + 8 <= view.byteLength) {
@@ -80,8 +78,6 @@ function parseWAV(view) {
                 const audioFormat = view.getUint16(offset + 8, true);
                 const numChannels = view.getUint16(offset + 10, true);
                 const sampleRate = view.getUint32(offset + 12, true);
-                const byteRate = view.getUint32(offset + 16, true);
-                const blockAlign = view.getUint16(offset + 20, true);
                 const bitsPerSample = view.getUint16(offset + 22, true);
 
                 meta['Format'] = audioFormat === 1 ? 'PCM' : `Compressed (${audioFormat})`;
@@ -99,7 +95,6 @@ function parseWAV(view) {
                         meta['Duration'] = `${duration.toFixed(2)} sec`;
                     }
                 }
-                dataParsed = true;
             }
 
             offset += 8 + chunkSize;
@@ -138,17 +133,6 @@ function parseFLAC(view) {
 
             if (type === 0) {
                 // STREAMINFO
-                const minBlock = view.getUint16(offset, false);
-                const maxBlock = view.getUint16(offset + 2, false);
-                const minFrame =
-                    (view.getUint8(offset + 4) << 16) |
-                    (view.getUint8(offset + 5) << 8) |
-                    view.getUint8(offset + 6);
-                const maxFrame =
-                    (view.getUint8(offset + 7) << 16) |
-                    (view.getUint8(offset + 8) << 8) |
-                    view.getUint8(offset + 9);
-
                 const b10 = view.getUint8(offset + 10);
                 const b11 = view.getUint8(offset + 11);
                 const b12 = view.getUint8(offset + 12);

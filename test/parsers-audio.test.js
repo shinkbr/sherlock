@@ -5,7 +5,6 @@ describe('Audio Parser', () => {
     it('should parse ID3v1 tags from MP3', () => {
         // Create a mock MP3 with ID3v1 at the end (128 bytes)
         const buffer = new ArrayBuffer(128 + 10);
-        const view = new DataView(buffer);
         const u8 = new Uint8Array(buffer);
 
         // Fill "MP3 data"

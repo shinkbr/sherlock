@@ -32,9 +32,7 @@ function parseFont(buffer) {
         for (let i = 0; i < numTables; i++) {
             const offset = 12 + i * 16;
             const tag = readString(view, offset, 4);
-            const checksum = view.getUint32(offset + 4, false);
             const tableOffset = view.getUint32(offset + 8, false);
-            const length = view.getUint32(offset + 12, false);
 
             if (tag === 'name') {
                 nameTableOffset = tableOffset;
@@ -51,7 +49,7 @@ function parseFont(buffer) {
                     const recordOff = nameTableOffset + 6 + i * 12;
                     const platformID = view.getUint16(recordOff, false);
                     const encodingID = view.getUint16(recordOff + 2, false);
-                    const languageID = view.getUint16(recordOff + 4, false);
+
                     const nameID = view.getUint16(recordOff + 6, false);
                     const length = view.getUint16(recordOff + 8, false);
                     const offset = view.getUint16(recordOff + 10, false);
