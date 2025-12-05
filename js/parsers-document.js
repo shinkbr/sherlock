@@ -240,18 +240,61 @@ async function parseOfficeXML(file) {
         if (commentFiles.length > 0) {
             let totalComments = 0;
             let authors = new Set();
+            let commentTexts = [];
+
             for (const path of commentFiles) {
                 const xmlText = await zip.file(path).async("string");
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const comments = xmlDoc.getElementsByTagName("w:comment").length || xmlDoc.getElementsByTagName("comment").length;
-                totalComments += comments;
 
-                const authorTags = xmlDoc.getElementsByTagName("w:author");
-                for (let i = 0; i < authorTags.length; i++) authors.add(authorTags[i].textContent);
+                // Word comments usually store text in <w:t> inside <w:comment>
+                // Excel comments might be different, but often simple text content in nodes.
+
+                const comments = xmlDoc.getElementsByTagName("w:comment");
+                const excelComments = xmlDoc.getElementsByTagName("comment"); // Excel often uses this without namespace prefix or different one
+
+                const allAndAnyComments = [...Array.from(comments), ...Array.from(excelComments)];
+                totalComments += allAndAnyComments.length;
+
+                for (const comment of allAndAnyComments) {
+                    // Try to find author
+                    const author = comment.getAttribute("w:author") || comment.getAttribute("author");
+                    if (author) authors.add(author);
+                    else {
+                        // Fallback for independent author tags if not attributes
+                        const authorTag = comment.getElementsByTagName("w:author")[0] || comment.getElementsByTagName("author")[0];
+                        if (authorTag) authors.add(authorTag.textContent);
+                    }
+
+                    // Try to find text
+                    // Word: <w:p> -> <w:r> -> <w:t>
+                    // Excel: <text><t>...</t></text> or just text content
+                    const textTags = [
+                        ...Array.from(comment.getElementsByTagName("w:t")),
+                        ...Array.from(comment.getElementsByTagName("t"))
+                    ];
+
+                    let cText = "";
+                    if (textTags.length > 0) {
+                        cText = textTags.map(node => node.textContent).join("").trim();
+                    } else {
+                        // fallback: just get all text content if structure is simple
+                        // but be careful not to get metadata text too often
+                        // For generic XML, maybe just try to get text content if it's short?
+                        // Let's stick to 't' tags which are common for text runs in OOXML
+                    }
+
+                    if (cText) {
+                        commentTexts.push(cText);
+                    }
+                }
             }
+
             if (totalComments > 0) {
                 props["Comments Count"] = totalComments;
                 if (authors.size > 0) props["Comment Authors"] = Array.from(authors).join(", ");
+                if (commentTexts.length > 0) {
+                    props["Comments Content"] = commentTexts.map(t => t.length > 100 ? t.slice(0, 100) + "..." : t).join("\n");
+                }
             }
         }
 

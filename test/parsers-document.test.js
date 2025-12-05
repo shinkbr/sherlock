@@ -62,7 +62,7 @@ describe('parsers-document', () => {
             <cp:keywords>tag1,tag2</cp:keywords>
         </cp:coreProperties>`);
         zip.file('xl/workbook.xml', `<workbook><sheets><sheet name="HiddenSheet" state="hidden"/></sheets></workbook>`);
-        zip.file('xl/comments1.xml', `<comments xmlns:w="w"><w:comment><w:author>Alice</w:author></w:comment></comments>`);
+        zip.file('xl/comments1.xml', `<comments xmlns:w="w"><w:comment w:author="Alice"><w:p><w:r><w:t>This is a comment.</w:t></w:r></w:p></w:comment></comments>`);
 
         const blob = await zip.generateAsync({ type: 'uint8array' });
         const props = await parseOfficeXML(new Blob([blob]));
@@ -71,6 +71,7 @@ describe('parsers-document', () => {
         expect(props['Last Modified By']).toBe('Dave');
         expect(props['⚠️ Hidden Sheets']).toContain('HiddenSheet');
         expect(props['Comment Authors']).toContain('Alice');
+        expect(props['Comments Content']).toContain('This is a comment.');
     });
 
     it('analyzes embedded media files for EXIF data', async () => {
