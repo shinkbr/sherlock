@@ -56,4 +56,4 @@ export const Parsers = {
     parseOfficeXML
 };
 
-window.Parsers = Parsers;
+// window.Parsers = Parsers; // Removed for module usage

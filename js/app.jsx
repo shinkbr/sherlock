@@ -1,6 +1,6 @@
-const { useState, useCallback } = React;
-
-const {
+import React, { useState, useCallback } from 'react';
+import exifr from 'exifr';
+import {
     readFileAsArrayBuffer,
     getMagicBytes,
     calculateHashes,
@@ -9,9 +9,9 @@ const {
     formatBytes,
     extractStrings,
     isLikelyText
-} = window.Helpers;
+} from './helpers.js';
 
-const {
+import {
     parseZipContents,
     parseTarArchive,
     parseGzip,
@@ -27,9 +27,9 @@ const {
     parseVideo,
     parsePDF,
     parseOfficeXML
-} = window.Parsers;
+} from './parsers.js';
 
-const {
+import {
     Header,
     DropZone,
     InfoCard,
@@ -41,7 +41,7 @@ const {
     HexSection,
     StringsSection,
     MapViewer
-} = window.Components;
+} from './components.js';
 
 const TEXT_EXT_LABELS = {
     txt: "Plain Text",
@@ -122,7 +122,7 @@ const App = () => {
                 sections = mach.sections;
                 symbols = mach.symbols || [];
             } else if (magicHex.startsWith('FFD8') || magicHex.startsWith('89504E47') || ['jpg', 'jpeg', 'png', 'heic', 'tiff'].includes(ext)) {
-                const ex = await window.exifr.parse(arrayBuffer, { tiff: true, xmp: true, icc: true, gps: true });
+                const ex = await exifr.parse(arrayBuffer, { tiff: true, xmp: true, icc: true, gps: true });
                 if (ex) {
                     for (const [k, v] of Object.entries(ex)) {
                         if (v instanceof Uint8Array || (typeof v === 'object' && !(v instanceof Date))) continue;
@@ -307,5 +307,4 @@ const App = () => {
     );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+export default App;

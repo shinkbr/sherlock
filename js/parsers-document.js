@@ -1,3 +1,9 @@
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import JSZip from 'jszip';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
 function formatPDFDate(raw) {
     if (!raw) return null;
     try {
@@ -37,7 +43,7 @@ async function parsePDF(arrayBuffer) {
 
     // Prefer pdf.js for structured metadata + annotation counts.
     try {
-        const loadingTask = window.pdfjsLib.getDocument({
+        const loadingTask = pdfjsLib.getDocument({
             data: arrayBuffer,
             disableFontFace: true,
             onPassword: (callback, reason) => {
@@ -185,7 +191,7 @@ async function parsePDF(arrayBuffer) {
 async function parseOfficeXML(file) {
     let props = {};
     try {
-        const zip = await window.JSZip.loadAsync(file);
+        const zip = await JSZip.loadAsync(file);
         const parser = new DOMParser();
 
         const hasMacros = zip.file("word/vbaProject.bin") || zip.file("xl/vbaProject.bin") || zip.file("ppt/vbaProject.bin");

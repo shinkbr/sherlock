@@ -1,4 +1,7 @@
-const { Icons } = window;
+import React from 'react';
+import { Icons } from './icons.js';
+
+// const { Icons } = window; // Removed for module usage
 
 const Header = () => (
     <nav className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md z-50">
@@ -378,7 +381,7 @@ const Components = {
     MapViewer
 };
 
-window.Components = Components;
+// window.Components = Components;
 
 export {
     Header,

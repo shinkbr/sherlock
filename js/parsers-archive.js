@@ -1,4 +1,6 @@
 import { formatBytes } from './helpers.js';
+import pako from 'pako';
+import JSZip from 'jszip';
 
 const decoder = new TextDecoder("utf-8");
 
@@ -107,7 +109,7 @@ function parseGzip(file, arrayBuffer, ext = "") {
     const shouldInspectTar = looksLikeTar();
     if (shouldInspectTar) {
         try {
-            const decompressed = window.pako.ungzip(u8);
+            const decompressed = pako.ungzip(u8);
             files = parseTarArchive(decompressed).files;
         } catch (e) {
             if (e instanceof ReferenceError) throw e;
@@ -186,7 +188,7 @@ async function parseZipContents(file) {
 
     // Fallback to JSZip if central directory parsing fails (e.g., malformed).
     try {
-        const zip = await window.JSZip.loadAsync(file);
+        const zip = await JSZip.loadAsync(file);
         const files = [];
         let count = 0;
         let isEncrypted = null;

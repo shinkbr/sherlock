@@ -1,3 +1,4 @@
+import exifr from 'exifr';
 const SECONDS_BETWEEN_1904_AND_1970 = 2082844800; // QuickTime epoch difference
 
 function readString(view, offset, length) {
