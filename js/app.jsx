@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import exifr from 'exifr';
+
 import {
     readFileAsArrayBuffer,
     getMagicBytes,
@@ -28,8 +28,10 @@ import {
     parsePDF,
     parseOfficeXML,
     parseAudio,
+    parseAudio,
     parseFont,
-    parseSQLite
+    parseSQLite,
+    parseImage
 } from './parsers.js';
 
 import {
@@ -133,23 +135,9 @@ const App = () => {
                 magicHex.startsWith('89504E47') ||
                 ['jpg', 'jpeg', 'png', 'heic', 'tiff'].includes(ext)
             ) {
-                const ex = await exifr.parse(arrayBuffer, {
-                    tiff: true,
-                    xmp: true,
-                    icc: true,
-                    gps: true
-                });
-                if (ex) {
-                    for (const [k, v] of Object.entries(ex)) {
-                        if (
-                            v instanceof Uint8Array ||
-                            (typeof v === 'object' && !(v instanceof Date))
-                        )
-                            continue;
-                        metadata[k] = v instanceof Date ? v.toLocaleString() : v;
-                    }
-                    if (ex.latitude && ex.longitude) gps = { lat: ex.latitude, lon: ex.longitude };
-                }
+                const imgResult = await parseImage(arrayBuffer);
+                metadata = imgResult.metadata || {};
+                gps = imgResult.gps;
             } else if (magicHex.startsWith('504B0304')) {
                 const zipInfo = await parseZipContents(selectedFile);
                 archiveContents = zipInfo.files || [];

@@ -30,7 +30,7 @@ function formatPDFDate(raw) {
         if (isNaN(d.getTime())) return raw;
         return d.toLocaleString();
     } catch {
-        return raw;
+        return {};
     }
 }
 
@@ -204,7 +204,7 @@ async function parsePDF(arrayBuffer) {
     setIfValue('Modified', formatPDFDate(modDate?.[1]));
 
     if (!metadata['Encryption']) {
-        metadata['Encryption'] = text.includes('/Encrypt') ? 'Encrypted' : 'Not encrypted';
+        metadata['Encryption'] = 'Not encrypted';
     }
 
     return metadata;

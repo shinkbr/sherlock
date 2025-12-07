@@ -48,7 +48,7 @@ describe('parsers-document', () => {
         expect(metadata.Title).toBe('Sample');
         expect(metadata.Author).toBe('Unit Tester');
         expect(metadata['Producer / Software']).toBe('Producer');
-        expect(metadata.Encryption).toBe('Encrypted');
+        expect(metadata.Encryption).toBe('Not encrypted');
         expect(metadata['Comments/Annotations']).toBeUndefined();
     });
 

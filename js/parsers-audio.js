@@ -62,13 +62,13 @@ function parseID3v2(view) {
 }
 
 function parseWAV(view) {
+    const meta = {};
     try {
         if (view.byteLength < 44) return {};
         // RIFF header checked by caller or identifyFileType
         // fmt chunk usually starts at 12
         let offset = 12;
         let fmtParsed = false;
-        const meta = {};
 
         while (offset + 8 <= view.byteLength) {
             const chunkId = readString(view, offset, 4);
@@ -104,7 +104,7 @@ function parseWAV(view) {
 
         return meta;
     } catch {
-        return {};
+        return meta;
     }
 }
 

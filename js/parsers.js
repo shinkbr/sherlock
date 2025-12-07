@@ -16,6 +16,7 @@ import { parsePDF, parseOfficeXML } from './parsers-document.js';
 import { parseAudio } from './parsers-audio.js';
 import { parseFont } from './parsers-font.js';
 import { parseSQLite } from './parsers-db.js';
+import { parseImage } from './parsers-image.js';
 
 export {
     identifyFileType,
