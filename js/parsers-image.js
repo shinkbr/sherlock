@@ -1,4 +1,3 @@
-
 import exifr from 'exifr';
 
 export async function parseImage(buffer) {

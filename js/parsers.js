@@ -37,7 +37,8 @@ export {
     parseOfficeXML,
     parseAudio,
     parseFont,
-    parseSQLite
+    parseSQLite,
+    parseImage
 };
 
 export const Parsers = {
@@ -59,5 +60,6 @@ export const Parsers = {
     parseOfficeXML,
     parseAudio,
     parseFont,
-    parseSQLite
+    parseSQLite,
+    parseImage
 };

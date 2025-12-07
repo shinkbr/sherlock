@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { parseImage } from '../js/parsers-image.js';
 import { parsePDF } from '../js/parsers-document.js';
@@ -21,9 +20,11 @@ describe('Resource Tests', () => {
     it('analyzes JPG correctly', async () => {
         const buf = readFile('DSCN0012.jpg');
         // Create a copy to ensure standard Uint8Array
-        const buffer = new Uint8Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+        const buffer = new Uint8Array(
+            buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+        );
 
-        const { metadata, gps } = await parseImage(buffer);
+        const { metadata } = await parseImage(buffer);
 
         expect(metadata.Make).toBe('NIKON');
         expect(metadata.Model).toBe('COOLPIX P6000');
@@ -34,7 +35,9 @@ describe('Resource Tests', () => {
 
     it('analyzes HEIC correctly', async () => {
         const buf = readFile('IMG_5195.HEIC');
-        const buffer = new Uint8Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+        const buffer = new Uint8Array(
+            buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+        );
         const { metadata, gps } = await parseImage(buffer);
 
         // HEIC parsing depends on exifr support
@@ -58,7 +61,11 @@ describe('Resource Tests', () => {
 
     it('analyzes MP3 correctly', async () => {
         const buffer = readFile('file_example_MP3_700KB.mp3');
-        const metadata = parseAudio({ name: 'file_example_MP3_700KB.mp3' }, buffer.buffer, 'MP3 Audio');
+        const metadata = parseAudio(
+            { name: 'file_example_MP3_700KB.mp3' },
+            buffer.buffer,
+            'MP3 Audio'
+        );
 
         // This sample only has ID3 tags, no MPEG frame parsing in parser logic
         expect(metadata['ID3v2 Version']).toBe('2.3');

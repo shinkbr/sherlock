@@ -28,7 +28,6 @@ import {
     parsePDF,
     parseOfficeXML,
     parseAudio,
-    parseAudio,
     parseFont,
     parseSQLite,
     parseImage
