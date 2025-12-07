@@ -8,7 +8,7 @@ import {
     parsePEImports,
     parsePESymbols,
     parsePESections
-} from '../js/parsers-binary.js';
+} from '../src/parsers/parsers-binary.js';
 
 function setString(view, offset, str) {
     for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));

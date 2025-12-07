@@ -1,4 +1,4 @@
-import { formatBytes } from './helpers.js';
+import { formatBytes } from '../utils/helpers.js';
 import pako from 'pako';
 import JSZip from 'jszip';
 

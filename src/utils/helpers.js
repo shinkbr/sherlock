@@ -1,5 +1,5 @@
 import SparkMD5 from 'spark-md5';
-import { FILE_SIGNATURES } from './config.js';
+import { FILE_SIGNATURES } from '../config.js';
 
 function readFileAsArrayBuffer(file) {
     return new Promise((resolve, reject) => {

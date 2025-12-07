@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseAudio } from '../js/parsers-audio.js';
+import { parseAudio } from '../src/parsers/parsers-audio.js';
 
 describe('Audio Parser', () => {
     it('should parse ID3v1 tags from MP3', () => {

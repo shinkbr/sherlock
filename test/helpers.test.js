@@ -9,7 +9,7 @@ import {
     identifyFileType,
     isLikelyText,
     readFileAsArrayBuffer
-} from '../js/helpers.js';
+} from '../src/utils/helpers.js';
 
 describe('helpers', () => {
     it('reads a Blob as an ArrayBuffer', async () => {

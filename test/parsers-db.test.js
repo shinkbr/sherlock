@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSQLite } from '../js/parsers-db.js';
+import { parseSQLite } from '../src/parsers/parsers-db.js';
 
 describe('SQLite Parser', () => {
     it('should identify SQLite 3 header and page size', () => {

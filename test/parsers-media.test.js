@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { parseVideo } from '../js/parsers-media.js';
+import { parseVideo } from '../src/parsers/parsers-media.js';
 
 const encoder = new TextEncoder();
 

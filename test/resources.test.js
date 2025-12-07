@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { parseImage } from '../js/parsers-image.js';
-import { parsePDF } from '../js/parsers-document.js';
-import { parseAudio } from '../js/parsers-audio.js';
-import { parsePE, parsePESections, parsePESymbols, parsePEImports } from '../js/parsers-binary.js';
+import { parseImage } from '../src/parsers/parsers-image.js';
+import { parsePDF } from '../src/parsers/parsers-document.js';
+import { parseAudio } from '../src/parsers/parsers-audio.js';
+import {
+    parsePE,
+    parsePESections,
+    parsePESymbols,
+    parsePEImports
+} from '../src/parsers/parsers-binary.js';
 import fs from 'fs';
 import path from 'path';
 

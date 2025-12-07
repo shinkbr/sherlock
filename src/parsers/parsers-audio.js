@@ -1,4 +1,4 @@
-import { formatBytes } from './helpers.js';
+import { formatBytes } from '../utils/helpers.js';
 
 function readString(view, offset, length) {
     if (offset + length > view.byteLength) return '';

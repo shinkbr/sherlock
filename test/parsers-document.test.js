@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import JSZip from 'jszip';
-import { formatPDFDate, parseOfficeXML, parsePDF } from '../js/parsers-document.js';
+import { formatPDFDate, parseOfficeXML, parsePDF } from '../src/parsers/parsers-document.js';
 
 vi.mock('exifr', () => ({
     default: {

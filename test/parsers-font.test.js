@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseFont } from '../js/parsers-font.js';
+import { parseFont } from '../src/parsers/parsers-font.js';
 
 describe('Font Parser', () => {
     it('should identify WOFF header', () => {

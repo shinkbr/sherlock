@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import pako from 'pako';
-import { parseGzip, parseTarArchive, parseZipContents } from '../js/parsers-archive.js';
+import { parseGzip, parseTarArchive, parseZipContents } from '../src/parsers/parsers-archive.js';
 
 const encoder = new TextEncoder();
 

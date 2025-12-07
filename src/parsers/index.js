@@ -1,4 +1,4 @@
-import { identifyFileType } from './helpers.js';
+import { identifyFileType } from '../utils/helpers.js';
 import { parseZipContents, parseTarArchive, parseGzip } from './parsers-archive.js';
 import {
     parsePE,

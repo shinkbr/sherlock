@@ -1,5 +1,5 @@
-import * as ParsersModule from '../js/parsers.js';
-import { identifyFileType } from '../js/helpers.js';
+import * as ParsersModule from '../src/parsers/index.js';
+import { identifyFileType } from '../src/utils/helpers.js';
 
 describe('parsers index re-exports', () => {
     it('matches direct exports to Parsers object', () => {
