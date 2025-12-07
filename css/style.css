@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+    /* Fonts */
+    --font-sans: 'Inter', 'sans-serif';
+    --font-mono: 'JetBrains Mono', 'monospace';
+
+    /* Colors */
+    --color-slate-850: #1e293b;
+    --color-slate-900: #0f172a;
+    --color-slate-950: #020617;
+    --color-cyan-400: #22d3ee;
+    --color-cyan-500: #06b6d4;
+}
 
 @layer components {
     /* Drop Zone Animations */
@@ -20,7 +31,7 @@
         display: grid;
         grid-template-columns: min-content 1fr min-content;
         gap: 1rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
         font-size: 0.85rem;
     }
 }
