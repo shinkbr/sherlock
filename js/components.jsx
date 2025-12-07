@@ -453,7 +453,7 @@ const MapViewer = ({ gps }) => {
                 frameBorder="0"
                 scrolling="no"
                 style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(95%)' }}
-                src={`https://maps.google.com/maps?q=${gps.lat},${gps.lon}&z=14&output=embed`}
+                src={`https://www.google.com/maps?q=${gps.lat},${gps.lon}&z=14&output=embed`}
             ></iframe>
             <a
                 href={`https://www.google.com/maps?q=${gps.lat},${gps.lon}`}
