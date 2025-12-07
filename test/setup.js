@@ -22,17 +22,17 @@ if (!globalThis.DOMMatrix) {
             this.e = 0;
             this.f = 0;
         }
-        setMatrixValue(str) {}
-        translate(tx, ty) {
+        setMatrixValue(_str) { }
+        translate(_tx, _ty) {
             return this;
         }
-        scale(sx, sy, ox, oy) {
+        scale(_sx, _sy, _ox, _oy) {
             return this;
         }
-        rotate(angle, ox, oy) {
+        rotate(_angle, _ox, _oy) {
             return this;
         }
-        multiply(other) {
+        multiply(_other) {
             return this;
         }
     };
