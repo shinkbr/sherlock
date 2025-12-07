@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseImage } from '../js/parsers-image.js';
 import { parsePDF } from '../js/parsers-document.js';
 import { parseAudio } from '../js/parsers-audio.js';
-import { parsePE, parsePESections, parsePEImports } from '../js/parsers-binary.js';
+import { parsePE, parsePESections, parsePESymbols, parsePEImports } from '../js/parsers-binary.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -94,6 +94,42 @@ describe('Resource Tests', () => {
             '.rsrc',
             '.reloc'
         ]);
+
+        // Check specific section details
+        const textSection = sections.find((s) => s.name === '.text');
+        expect(textSection).toMatchObject({
+            type: 'CODE',
+            address: 4096,
+            offset: 1024,
+            size: 158208,
+            flags: 'XR'
+        });
+
+        const rdataSection = sections.find((s) => s.name === '.rdata');
+        expect(rdataSection).toMatchObject({
+            type: 'DATA',
+            address: 163840,
+            offset: 159232,
+            size: 72192,
+            flags: 'R'
+        });
+
+        const symbols = parsePESymbols(view, e_lfanew);
+        // Verify key import symbols
+        expect(symbols).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    name: 'KERNEL32.dll!GetCommandLineW',
+                    type: 'IMPORT',
+                    address: 'IAT(hint:491)'
+                }),
+                expect.objectContaining({
+                    name: 'USER32.dll!SendMessageW',
+                    type: 'IMPORT'
+                })
+            ])
+        );
+        expect(symbols.length).toBeGreaterThan(100);
 
         const imports = parsePEImports(view, e_lfanew);
         expect(Object.keys(imports)).toEqual(
