@@ -1,25 +1,26 @@
 <!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; frame-src https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;"
+        />
+        <title>Sherlock | File Forensics</title>
+        <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+        <link href="css/style.css" rel="stylesheet" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; frame-src https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;" />
-    <title>Sherlock | File Forensics</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link href="css/style.css" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap"
-        rel="stylesheet" />
-</head>
+    <body class="min-h-screen flex flex-col bg-slate-950 text-slate-200 font-sans">
+        <!-- React Root -->
+        <div id="root" class="flex-grow flex flex-col"></div>
 
-<body class="min-h-screen flex flex-col bg-slate-950 text-slate-200 font-sans">
-    <!-- React Root -->
-    <div id="root" class="flex-grow flex flex-col"></div>
-
-    <!-- Application Entry -->
-    <script type="module" src="/js/index.jsx"></script>
-</body>
-
+        <!-- Application Entry -->
+        <script type="module" src="/js/index.jsx"></script>
+    </body>
 </html>
