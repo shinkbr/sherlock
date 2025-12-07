@@ -22,7 +22,7 @@ if (!globalThis.DOMMatrix) {
             this.e = 0;
             this.f = 0;
         }
-        setMatrixValue(_str) { }
+        setMatrixValue(_str) {}
         translate(_tx, _ty) {
             return this;
         }

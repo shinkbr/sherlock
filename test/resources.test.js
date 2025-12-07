@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseImage } from '../js/parsers-image.js';
 import { parsePDF } from '../js/parsers-document.js';
 import { parseAudio } from '../js/parsers-audio.js';
+import { parsePE, parsePESections, parsePEImports } from '../js/parsers-binary.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -71,5 +72,34 @@ describe('Resource Tests', () => {
         expect(metadata['ID3v2 Version']).toBe('2.3');
         // Based on previous output: 'ID3v2 Size': '109 Bytes'
         expect(metadata['ID3v2 Size']).toBe('109 Bytes');
+    });
+
+    it('analyzes PE correctly', () => {
+        const buf = readFile('ctrl2cap.exe');
+        const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+
+        const { metadata, e_lfanew } = parsePE(view);
+
+        // Check basic metadata
+        // Machine 0x14c is i386 (32-bit)
+        expect(metadata.Machine).toBe('14c');
+        expect(metadata.Compiled).toBe('Thu, 13 Feb 2025 17:25:27 GMT');
+
+        const sections = parsePESections(view, e_lfanew);
+        expect(sections.length).toBe(5);
+        expect(sections.map((s) => s.name)).toEqual([
+            '.text',
+            '.rdata',
+            '.data',
+            '.rsrc',
+            '.reloc'
+        ]);
+
+        const imports = parsePEImports(view, e_lfanew);
+        expect(Object.keys(imports)).toEqual(
+            expect.arrayContaining(['KERNEL32.dll', 'USER32.dll', 'GDI32.dll', 'ADVAPI32.dll'])
+        );
+        expect(imports['KERNEL32.dll']).toContain('CreateFileW');
+        expect(imports['USER32.dll']).toContain('SendMessageW');
     });
 });
