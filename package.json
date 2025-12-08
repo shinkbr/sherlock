@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host",
         "build": "vite build",
-        "preview": "vite preview",
+        "preview": "vite preview --host",
         "test": "vitest run",
         "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
         "lint:fix": "eslint . --report-unused-disable-directives --max-warnings 0 --fix",
