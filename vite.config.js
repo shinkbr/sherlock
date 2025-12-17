@@ -14,6 +14,7 @@ export default defineConfig({
                 name: 'Sherlock',
                 short_name: 'Sherlock',
                 description: 'Analyze files in your browser',
+                background_color: '#0f172a',
                 theme_color: '#0f172a',
                 icons: [
                     {
